@@ -8,5 +8,11 @@ const config: Config = {
     "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   plugins: [daisyui],
+  safelist: [
+    "alert-success",
+    "alert-error",
+    "alert-info",
+    "alert-warning",
+  ]
 };
 export default config;
