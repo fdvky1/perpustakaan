@@ -3,9 +3,10 @@
 import Link from 'next/link';
 import { FormEvent } from 'react';
 import useToastStore from '@/store/useToastStore';
-import { redirect } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 
 export default function SignUpPage(){
+    const router = useRouter();
     const { setMessage } = useToastStore();
 
     const register = async (e: FormEvent<HTMLFormElement>)=>{
@@ -22,7 +23,7 @@ export default function SignUpPage(){
                 address: formData.get('address'),
             })
         }).then((res)=>{
-            if (res.status == 200) return redirect('/sign-in');
+            if (res.status == 200) return router.push('/sign-in')
             setMessage(res.status == 409 ? "Alamat surel telah digunakan" : "Terjadi kesalahan, mohon hubungi Admin!", "error");
         })
     }
