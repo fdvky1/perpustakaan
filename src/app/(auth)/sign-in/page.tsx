@@ -3,8 +3,10 @@
 import Link from "next/link";
 import { signIn } from "next-auth/react"
 import { FormEvent } from "react";
+import useToastStore from '@/store/useToastStore';
 
 export default function SignInPage(){
+    const { setMessage } = useToastStore();
     const handleSubmit = async(e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
@@ -13,6 +15,8 @@ export default function SignInPage(){
             password: formData.get('password'),
             redirect: true,
             callbackUrl: '/dashboard'
+        }).catch(()=>{
+            setMessage("Alamat surel atau kata sandi salah!", "error");
         })
     }
 
