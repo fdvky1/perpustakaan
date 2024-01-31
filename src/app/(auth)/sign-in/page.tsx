@@ -18,7 +18,7 @@ export default function SignInPage(){
             redirect: false,
             callbackUrl: '/dashboard'
         });
-        if(res.error){
+        if(res?.error){
             setMessage("Alamat surel atau kata sandi salah!", "error");
         } else {
             router.push("/dashboard");
