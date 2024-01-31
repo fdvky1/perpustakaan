@@ -1,23 +1,28 @@
 'use client';
 
 import Link from "next/link";
-import { signIn } from "next-auth/react"
+import { signIn } from "next-auth/react";
 import { FormEvent } from "react";
-import useToastStore from '@/store/useToastStore';
+import { useRouter } from "next/navigation";
+import useToastStore from "@/store/useToastStore";
 
 export default function SignInPage(){
+    const router = useRouter();
     const { setMessage } = useToastStore();
     const handleSubmit = async(e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
-        signIn('credentials', {
+        const res = await signIn('credentials', {
             email: formData.get('email'),
             password: formData.get('password'),
-            redirect: true,
+            redirect: false,
             callbackUrl: '/dashboard'
-        }).catch(()=>{
+        });
+        if(res.error){
             setMessage("Alamat surel atau kata sandi salah!", "error");
-        })
+        } else {
+            router.push("/dashboard");
+        }
     }
 
     return (
