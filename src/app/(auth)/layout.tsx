@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 export default function AuthLayout({ children }: React.PropsWithChildren) {
     return (
         <div className="hero min-h-screen bg-base-200 bg-pos">
