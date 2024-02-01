@@ -11,10 +11,42 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+enum Role {
+  admin
+  operator
+  user
+}
 model User {
   id            String    @id @default(cuid())
-  name          String?
-  email         String?   @unique
+  name          String
+  email         String    @unique
   password      String
   address       String
+  role          Role      @default(user)
+}
+
+model Category {
+  id            String    @id @default(cuid())
+  name          String    @unique
+  books   BookCategory[]
+}
+
+model Book {
+  id            String    @id @default(cuid())
+  title         String    @unique
+  cover         String?
+  author        String
+  publisher     String
+  published_at  DateTime
+  categories   BookCategory[]
+}
+
+model BookCategory {
+  id         String @id @default(cuid())
+  book       Book   @relation(fields: [bookId], references: [id])
+  bookId     String
+  category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  categoryId String
+
+  @@unique([bookId, categoryId], name: "unique_book_category")
 }

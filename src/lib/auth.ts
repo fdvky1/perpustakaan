@@ -3,7 +3,7 @@ import { NextAuthOptions, getServerSession } from 'next-auth';
 import { compare } from 'bcrypt';
 import CredentialsProvider from 'next-auth/providers/credentials';
 import prisma from '@/lib/db';
-
+  
 export const authOptions: NextAuthOptions = {
     adapter: PrismaAdapter(prisma),
     providers: [
@@ -25,6 +25,7 @@ export const authOptions: NextAuthOptions = {
                 const isCorrect = await compare(credentials!.password, user.password);
                 if (isCorrect) return {
                     id: user.id,
+                    name: user.name,
                     email: user.email
                 }
               }
@@ -33,7 +34,8 @@ export const authOptions: NextAuthOptions = {
           }),
     ],
     session: {
-        strategy: 'jwt'
+        strategy: 'jwt',
+        maxAge: 2 * 24 * 60 * 60
     },
     pages: {
         signIn: '/sign-in'
@@ -48,16 +50,18 @@ export const authOptions: NextAuthOptions = {
             }
             return token;
         },
-        async session({ token, session }){
-            if (session.user){
-                // session.user.id = token.id;
-                session.user.name = token.name;
-                session.user.email = token.email;
+        session({ token, session }){
+            return {
+                ...session, 
+                user: {
+                    id: token.id,
+                    name: token.name,
+                    email: token.email
+                }
             }
-            return session;
         },
         redirect(){
-            return '/';
+            return '/dashboard';
         }
     }
 }
