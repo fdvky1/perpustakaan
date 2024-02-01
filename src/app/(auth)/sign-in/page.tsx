@@ -2,27 +2,29 @@
 
 import Link from "next/link";
 import { signIn } from "next-auth/react";
-import { FormEvent } from "react";
-import { useRouter } from "next/navigation";
+import { FormEvent, useEffect } from "react";
+import { useSearchParams } from "next/navigation";
 import useToastStore from "@/store/useToastStore";
 
 export default function SignInPage(){
-    const router = useRouter();
+    const searchParams = useSearchParams();
     const { setMessage } = useToastStore();
+
+    useEffect(() => {
+        if(!!searchParams.get("error")){
+            setMessage("Alamat surel atau kata sandi salah!", "error");
+        }
+    },[searchParams, setMessage]);
+
     const handleSubmit = async(e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const formData = new FormData(e.currentTarget);
-        const res = await signIn('credentials', {
+        await signIn('credentials', {
             email: formData.get('email'),
             password: formData.get('password'),
-            redirect: false,
+            redirect: true,
             callbackUrl: '/dashboard'
         });
-        if(res?.error){
-            setMessage("Alamat surel atau kata sandi salah!", "error");
-        } else {
-            router.push("/dashboard");
-        }
     }
 
     return (
