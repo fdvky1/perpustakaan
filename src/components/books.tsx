@@ -28,7 +28,7 @@ export default function Books(){
                 {data.map((d, i) => (
                     <div className={"w-full my-3 " + (d.books.length == 0 ? "hidden" : "")} key={i}>
                         <h4 className="text-base font-semibold mb-3">{d.name}</h4>
-                        <div className="flex w-full overflow-x-auto overflow-y-hidden">
+                        <div className="flex gap-2 w-full overflow-x-auto overflow-y-hidden">
                             {d.books.map((b, _i) => (
                                 <Link href={"/book/" + b.book.id} key={i}>
                                     <div className="card card-compact w-44 bg-base-100 shadow-xl">
