@@ -18,7 +18,7 @@ export async function DELETE(request: Request, { params }: Params){
                 id: params.id
             } 
         });
-        return NextResponse.json({ message: "Success", detail: response })
+        return NextResponse.json({ message: "Successfully deleted" })
     }catch(e){
         return NextResponse.json({ message: "Failed to delete category"}, { status: 503})
     }
@@ -35,7 +35,7 @@ export async function PUT(request: Request, { params }: Params){
                 name
             }
         });
-        return NextResponse.json({ message: "success",  detail: response });
+        return NextResponse.json({ message: "Updated successfully",  detail: response });
     } catch(e){
         return NextResponse.json({ message: "Failed to update category"}, { status: 503 })
     }

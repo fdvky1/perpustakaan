@@ -6,16 +6,20 @@ interface Payload {
 }
 
 export async function GET(request: NextRequest){
-    const categories = await (!!request.nextUrl.searchParams.get("include") ? prisma.category.findMany({
-        include: {
-            books: {
-                include: {
-                    book: true
+    try {
+        const categories = await (!!request.nextUrl.searchParams.get("include") ? prisma.category.findMany({
+            include: {
+                books: {
+                    include: {
+                        book: true
+                    }
                 }
             }
-        }
-    }) : prisma.category.findMany());
-    return NextResponse.json({ data: categories });
+        }) : prisma.category.findMany());
+        return NextResponse.json({ data: categories });
+    }catch(e){
+        return NextResponse.json({ message: "Failed to get categories"}, { status: 503})
+    }
 }
 
 export async function POST(request: Request){
