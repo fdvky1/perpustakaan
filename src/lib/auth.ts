@@ -18,7 +18,7 @@ export const authOptions: NextAuthOptions = {
             async authorize(credentials, req) {
               const user = await prisma.user.findUnique({
                 where: {
-                    email: credentials!.email
+                    email: credentials!.email,
                 },
               });
               if (user) {
@@ -26,6 +26,7 @@ export const authOptions: NextAuthOptions = {
                 if (isCorrect) return {
                     id: user.id,
                     name: user.name,
+                    role: user.role,
                     email: user.email
                 }
               }
@@ -46,6 +47,7 @@ export const authOptions: NextAuthOptions = {
             if (user) {
                 token.id = user.id;
                 token.name = user.name;
+                token.role = user.role;
                 token.email = user.email;
             }
             return token;
@@ -55,6 +57,7 @@ export const authOptions: NextAuthOptions = {
                 ...session, 
                 user: {
                     id: token.id,
+                    role: token.role,
                     name: token.name,
                     email: token.email
                 }

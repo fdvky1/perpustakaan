@@ -1,9 +1,12 @@
 "use client";
+
+import { useSession } from 'next-auth/react';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 
 export default function Header(){
-    const pathname = usePathname()
+    const pathname = usePathname();
+    const session = useSession();
     return ["/sign-in", "/sign-up"].includes(pathname) ? (<></>) : (
         <>
             <div className="navbar bg-base-100">
@@ -25,16 +28,23 @@ export default function Header(){
                 <input id="my-drawer" type="checkbox" className="drawer-toggle" />
                 <div className="drawer-side z-[999]">
                     <label htmlFor="my-drawer" aria-label="close sidebar" className="drawer-overlay"></label>
-                    <ul className="menu pt-[5rem] px-4 w-80 min-h-full bg-base-200 text-base-content space-y-2">
+                    <ul className="menu pt-[5rem] px-4 w-[calc(90dvw-5rem)] sm:w-full max-w-80 min-h-full bg-base-200 text-base-content space-y-2">
                     {/* Sidebar content here */}
                         <li><Link href="/dashboard">Dashboard</Link></li>
-                        <li>
-                            <span>Kelola</span>
-                            <ul className="menu px-4 min-h-full bg-base-200 text-base-content space-y-1">
-                                <li><Link href="/category">Kategori</Link></li>
-                                <li><Link href="/book">Buku</Link></li>
-                            </ul>
-                        </li>
+                        {session.data ? session.data.user.role == "user" ? (
+                            <li>
+                                <Link href="#">Peminjaman</Link>
+                            </li>
+                            ) : (
+                            <li>
+                                <span>Kelola</span>
+                                <ul className="menu px-4 min-h-full bg-base-200 text-base-content space-y-1">
+                                    <li><Link href="/category">Kategori</Link></li>
+                                    <li><Link href="/book">Buku</Link></li>
+                                </ul>
+                            </li> 
+                            )
+                        : null}
                     </ul>
                 </div>
             </div>

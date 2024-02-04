@@ -5,8 +5,10 @@ import { extractRouterConfig } from "uploadthing/server";
 import { ourFileRouter } from "@/app/api/uploadthing/core";
 
 import Toast from "@/components/toast";
-import "./globals.css";
 import Header from "@/components/header";
+import ClientProvider from "@/providers/ClientProviders";
+
+import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -26,20 +28,22 @@ export default function RootLayout({
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4.1.0/fonts/remixicon.css" />
       </head>
       <body className={inter.className}>
-        <NextSSRPlugin
-          /**
-           * The `extractRouterConfig` will extract **only** the route configs
-           * from the router to prevent additional information from being
-           * leaked to the client. The data passed to the client is the same
-           * as if you were to fetch `/api/uploadthing` directly.
-           */
-          routerConfig={extractRouterConfig(ourFileRouter)}
-        />
-        <div className="w-full bg-base-300 h-[100dvh]">
-          <Header/>
-          <Toast/>
-          {children}
-        </div>
+        <ClientProvider>
+          <NextSSRPlugin
+            /**
+             * The `extractRouterConfig` will extract **only** the route configs
+             * from the router to prevent additional information from being
+             * leaked to the client. The data passed to the client is the same
+             * as if you were to fetch `/api/uploadthing` directly.
+             */
+            routerConfig={extractRouterConfig(ourFileRouter)}
+          />
+          <div className="w-full bg-base-300 min-h-[100dvh] h-full overflow-x-hidden">
+            <Header/>
+            <Toast/>
+            {children}
+          </div>
+        </ClientProvider>
       </body>
     </html>
   );
