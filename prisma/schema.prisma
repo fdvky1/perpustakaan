@@ -43,7 +43,7 @@ model Book {
 
 model BookCategory {
   id         String @id @default(cuid())
-  book       Book   @relation(fields: [bookId], references: [id])
+  book       Book   @relation(fields: [bookId], references: [id],onDelete: Cascade)
   bookId     String
   category   Category @relation(fields: [categoryId], references: [id], onDelete: Cascade)
   categoryId String

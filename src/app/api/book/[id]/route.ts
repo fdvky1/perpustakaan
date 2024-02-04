@@ -9,7 +9,6 @@ interface Payload {
     publisher: string;
     published_at: string;
     categories: string[];
-    deleted_categories: string[];
 }
 
 export async function GET(request: Request, { params } : Params){
@@ -29,7 +28,7 @@ export async function GET(request: Request, { params } : Params){
 
 export async function DELETE(request: Request, { params }: Params){
     try {
-        const response = await prisma.book.delete({where: { id: params.id }});
+        await prisma.book.delete({where: { id: params.id }});
         return NextResponse.json({ message: "deleted successfully" })
     }catch(e){
         return NextResponse.json({ message: "Failed to delete"}, { status: 503 });

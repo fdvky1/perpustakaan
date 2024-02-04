@@ -30,7 +30,7 @@ export default function Books(){
                         <h4 className="text-base font-semibold mb-3">{d.name}</h4>
                         <div className="flex gap-2 w-full overflow-x-auto overflow-y-hidden">
                             {d.books.map((b, _i) => (
-                                <Link href={"/book/" + b.book.id} key={i}>
+                                <Link href={"/book/" + b.book.id} key={`${i}-${_i}`}>
                                     <div className="card card-compact w-44 bg-base-100 shadow-xl">
                                         <figure className="relative h-44">
                                             <Image
