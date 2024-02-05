@@ -16,35 +16,37 @@ interface ExtBook extends Book {
 }
 
 export default function Books(){
-    const [data, setData] = useState<ExtCategory[]>([])
-    useEffect(()=>{
-        fetch("/api/book?include=category").then( async res => {
-            if (res.status == 200){
-                const json = (await res.json()).data as ExtBook[];
-                const sorted: ExtCategory[] = [];
+    const [data, setData] = useState<ExtCategory[]>([]);
+    const fetchBooks = (keyword: string = "") => fetch("/api/book?include=category").then( async res => {
+        if (res.status == 200){
+            const json = (await res.json()).data as ExtBook[];
+            const sorted: ExtCategory[] = [];
 
-                json.forEach(book => {
-                    const categories = book.categories.map(entry => entry.category);
-                    const first = categories.length > 0 ? categories[0] : null;
-                    const existing = sorted.find(v => v.id == (first?.id || "uncategorized"));
-                    if (existing){
-                        existing.books.push(book);
-                    }else if (first){
-                        sorted.push({
-                            ...first,
-                            books: [book]
-                        });
-                    }else{
-                        sorted.push({
-                            id: "uncategorized",
-                            name: "Tanpa Kategori",
-                            books: [book]
-                        });
-                    }
-                });
-                setData(sorted);
-            }
-        })
+            json.forEach(book => {
+                const categories = book.categories.map(entry => entry.category);
+                const first = categories.length > 0 ? categories[0] : null;
+                const existing = sorted.find(v => v.id == (first?.id || "uncategorized"));
+                if (existing){
+                    existing.books.push(book);
+                }else if (first){
+                    sorted.push({
+                        ...first,
+                        books: [book]
+                    });
+                }else{
+                    sorted.push({
+                        id: "uncategorized",
+                        name: "Tanpa Kategori",
+                        books: [book]
+                    });
+                }
+            });
+            setData(sorted.sort((_a, b) => b.id == "uncategorized" ? -1 : 1));
+        }
+    });
+
+    useEffect(()=>{
+        fetchBooks();
     }, []);
 
     return (
