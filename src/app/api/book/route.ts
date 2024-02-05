@@ -1,6 +1,5 @@
 import prisma from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
-
 interface Payload {
     cover?: string | "";
     title: string;
@@ -10,16 +9,80 @@ interface Payload {
     categories: string[];
 }
 
+type SearchCondition = {
+    contains: string;
+    mode?: 'insensitive';
+};
+
+interface Query {
+    where?: {
+        categories?:{
+            some?: {
+                categoryId: string;
+            }
+        }
+        OR?: {
+            title?: SearchCondition;
+            author?: SearchCondition;
+            publisher?: SearchCondition;
+        }[];
+    }
+    include?:{
+        categories?:{
+            where?: {
+                categoryId?: string;
+            }
+            include?:{
+                category?: boolean
+            }
+        }
+    }
+}
+
 export async function GET(request: NextRequest){
-    const books = await (!!request.nextUrl.searchParams.get("include") ? prisma.book.findMany({
-        include: {
+    const include = request.nextUrl.searchParams.get("include");
+    const keyword = request.nextUrl.searchParams.get("keyword");
+    const category = request.nextUrl.searchParams.get("category");
+
+
+    const query: Query = {};
+    if(!!keyword){
+        query.where = {
+            OR: [
+                { title: { contains: keyword, mode: 'insensitive'}},
+                { author: { contains: keyword, mode: 'insensitive'}},
+                { publisher: { contains: keyword, mode: 'insensitive'}},
+            ]
+        }
+    }
+
+    if(!!category){
+        query.where = {
+            ...query.where,
+            categories: {
+                some: {
+                    categoryId: category
+                }
+            }
+        }
+    }
+
+    if(include == "category"){
+        query.include = {
             categories: {
                 include: {
                     category: true
                 }
             }
         }
-    }) : prisma.book.findMany());
+        if(!!category){
+            query.include.categories!.where = {
+                categoryId: category
+            }
+        }
+    }
+    
+    const books = await prisma.book.findMany(query);
     return NextResponse.json({ data: books })
 }
 
