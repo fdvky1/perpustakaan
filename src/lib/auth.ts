@@ -43,7 +43,7 @@ export const authOptions: NextAuthOptions = {
     },
     secret: process.env.NEXTAUTH_SECRET!,
     callbacks: {
-        async jwt({ token, user}){
+        async jwt({ token, user }){
             if (user) {
                 token.id = user.id;
                 token.name = user.name;
@@ -52,14 +52,15 @@ export const authOptions: NextAuthOptions = {
             }
             return token;
         },
-        session({ token, session }){
+        async session({ token, session }){
+            const user = await prisma.user.findUnique({ where: { id: token.id }})
             return {
                 ...session, 
                 user: {
-                    id: token.id,
-                    role: token.role,
-                    name: token.name,
-                    email: token.email
+                    id: user!.id,
+                    role: user!.role,
+                    name: user!.name,
+                    email: user!.email
                 }
             }
         },
