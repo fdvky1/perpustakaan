@@ -71,7 +71,7 @@ export default function CategoryPage(){
     }
 
     return (
-        <div className="container mx-auto pt-10 pb-16">
+        <div className="container mx-auto px-2 pt-10 pb-16">
             <input type="checkbox" id="my_modal_1" className="modal-toggle" checked={modal.status} readOnly />
             <div id="my_modal_1" className="modal" role="dialog">
                 <div className="modal-box">
