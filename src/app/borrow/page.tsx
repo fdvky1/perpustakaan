@@ -19,7 +19,8 @@ export default function Borrow(){
         status: false,
         selected: "",
         input: "",
-    })
+    });
+    
     const { setMessage } = useToastStore();
 
     const fetchBook = () => fetch("/api/borrow").then(async res => {

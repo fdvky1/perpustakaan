@@ -27,6 +27,7 @@ export default function BookDetail({ params }: { params: { id: string }}){
     const [book, setBook] = useState<ExtBook>();
     const [open, setOpen] = useState<boolean>(false);
     const [amount, setAmount] = useState<number>(1);
+    const [modal, setModal] = useState<boolean>(false);
 
     useEffect(()=> {
         fetch("/api/book/"+params.id).then(async res => {
@@ -54,13 +55,15 @@ export default function BookDetail({ params }: { params: { id: string }}){
         })
     }).then(async(res) => {
         if (res.status != 200) return setMessage("Terjadi kesalahaan saat meminjam buku", "error");
-        setMessage("Buku berhasil dipinjam", "success") 
+        setMessage("Buku berhasil dipinjam", "success");
+        setModal(false);
+        router.push("/borrow")
     })
     return (
         <div className="container mx-auto pt-10 pb-16 px-2">
             {session.data?.user.role == "user" ? (
                 <>
-                <input type="checkbox" id="borrowModal" className="modal-toggle" readOnly/>
+                <input type="checkbox" id="borrowModal" className="modal-toggle" checked={modal} readOnly/>
                 <div className="modal" role="dialog">
                     <div className="modal-box">
                         <h3 className="font-bold text-lg">Anda yakin?</h3>

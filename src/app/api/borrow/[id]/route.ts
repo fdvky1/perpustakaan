@@ -1,12 +1,16 @@
 import prisma from "@/lib/db";
 import { NextResponse } from "next/server";
+import { getAuthSession } from '@/lib/auth'
+
 
 export async function PUT(request: Request, { params }: { params: {id: string}}){
     try {
+        const session = await getAuthSession();
         const transaction = await prisma.$transaction(async(tx) => {
             const findBorrow = await tx.borrow.findUnique({
                 where: {
-                    id: params.id
+                    id: params.id,
+                    userId: session!.user.id
                 }
             });
             const findBook = await tx.book.findUnique({
