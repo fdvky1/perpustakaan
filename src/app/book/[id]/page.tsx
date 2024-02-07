@@ -5,7 +5,7 @@ import Image from "next/image";
 import Lightbox from "yet-another-react-lightbox";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { FormEvent, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 
 import useToastStore from "@/store/useToastStore";
@@ -26,6 +26,7 @@ export default function BookDetail({ params }: { params: { id: string }}){
     const { setMessage } = useToastStore();
     const [book, setBook] = useState<ExtBook>();
     const [open, setOpen] = useState<boolean>(false);
+    const [amount, setAmount] = useState<number>(1);
 
     useEffect(()=> {
         fetch("/api/book/"+params.id).then(async res => {
@@ -45,19 +46,47 @@ export default function BookDetail({ params }: { params: { id: string }}){
         })
     }
 
+    const borrowBook = () => fetch("/api/borrow/", {
+        method: "POST",
+        body: JSON.stringify({
+            bookId: params.id,
+            amount
+        })
+    }).then(async(res) => {
+        if (res.status != 200) return setMessage("Terjadi kesalahaan saat meminjam buku", "error");
+        setMessage("Buku berhasil dipinjam", "success") 
+    })
     return (
         <div className="container mx-auto pt-10 pb-16 px-2">
-            <input type="checkbox" id="deleteModal" className="modal-toggle" readOnly/>
-            <div className="modal" role="dialog">
-                <div className="modal-box">
-                    <h3 className="font-bold text-lg">Anda yakin?</h3>
-                    <p className="py-4">Buku akan dihapus secara permanen!</p>
-                    <div className="modal-action">
-                        <label htmlFor="deleteModal" className="btn">Batalkan</label>
-                        <button className="btn btn-error" onClick={deleteBook}>Hapus</button>
+            {session.data?.user.role == "user" ? (
+                <>
+                <input type="checkbox" id="borrowModal" className="modal-toggle" readOnly/>
+                <div className="modal" role="dialog">
+                    <div className="modal-box">
+                        <h3 className="font-bold text-lg">Anda yakin?</h3>
+                        <p className="py-4">Anda akan meminjam buku ini sebanyak {amount} Buku!</p>
+                        <div className="modal-action">
+                            <label htmlFor="borrowModal" className="btn">Batalkan</label>
+                            <button className="btn btn-primary" onClick={borrowBook}>Pinjam</button>
+                        </div>
                     </div>
                 </div>
-            </div>
+                </>
+            ) : (
+                <>
+                <input type="checkbox" id="deleteModal" className="modal-toggle" readOnly/>
+                <div className="modal" role="dialog">
+                    <div className="modal-box">
+                        <h3 className="font-bold text-lg">Anda yakin?</h3>
+                        <p className="py-4">Buku akan dihapus secara permanen!</p>
+                        <div className="modal-action">
+                            <label htmlFor="deleteModal" className="btn">Batalkan</label>
+                            <button className="btn btn-error" onClick={deleteBook}>Hapus</button>
+                        </div>
+                    </div>
+                </div>
+                </>
+            )}
             { book && book.cover ? (
                 <Lightbox
                     open={open}
@@ -116,6 +145,10 @@ export default function BookDetail({ params }: { params: { id: string }}){
                                         <td>{book ? new Date(book.published_at as string).toLocaleDateString() : (<div className="skeleton h-4 w-28"></div>)}</td>
                                     </tr>
                                     <tr>
+                                        <th className="text-left pr-4">Jumlah ketersediaan</th>
+                                        <td>{book ? book.stock + " Buku" : (<div className="skeleton h-4 w-28"></div>)}</td>
+                                    </tr>
+                                    <tr>
                                         <th className="text-left pr-4">Kategori</th>
                                         <td>
                                             <div className="flex flex-wrap gap-1">
@@ -127,7 +160,7 @@ export default function BookDetail({ params }: { params: { id: string }}){
                                                 : (
                                                     <>
                                                     <div className="skeleton h-4 w-16"></div>
-                                                    {/* <div className="skeleton h-4 w-16"></div> */}
+                                                    <div className="skeleton h-4 w-16"></div>
                                                     </>   
                                                 )}
                                             </div>
@@ -138,13 +171,16 @@ export default function BookDetail({ params }: { params: { id: string }}){
                         </div>
                     </div>
                     <div className="flex gap-1.5 w-full flex-wrap">
-                        {session.data?.user.role != "user" ? (
+                        {session.data && session.data.user.role != "user" ? (
                             <>
                             <Link href={book?.id + "/edit"} className="btn btn-neutral">Perbarui Buku</Link>
                             <label htmlFor="deleteModal" className="btn btn-error">Hapus Buku</label>
                             </>
                         ) : (
-                            <button className="btn btn-primary">Pinjam Buku</button>
+                            <div className="flex gap-1">
+                                <input type="number" name="amount" id="amount" min={1} max={book?.stock||0} className="input input-bordered max-w-[6rem]" value={amount} onChange={((e: FormEvent<HTMLInputElement>) => setAmount(parseInt(e.currentTarget.value)))}/>
+                                <label htmlFor="borrowModal" className="btn btn-primary">Pinjam Buku</label>
+                            </div>
                         )}
                     </div>
                 </div>

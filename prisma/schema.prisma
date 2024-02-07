@@ -23,6 +23,7 @@ model User {
   password      String
   address       String
   role          Role      @default(user)
+  Borrows Borrow[]
 }
 
 model Category {
@@ -36,9 +37,11 @@ model Book {
   title         String    @unique
   cover         String?
   author        String
+  stock         Int       @default(0)
   publisher     String
   published_at  DateTime
-  categories   BookCategory[]
+  categories    BookCategory[]
+  borrows       Borrow[]
 }
 
 model BookCategory {
@@ -49,4 +52,15 @@ model BookCategory {
   categoryId String
 
   @@unique([bookId, categoryId], name: "unique_book_category")
+}
+
+model Borrow {
+  id            String @id @default(cuid())
+  user          User @relation(fields: [userId], references: [id])
+  userId        String
+  book          Book @relation(fields: [bookId], references: [id])
+  bookId        String
+  amount        Int
+  borrowed_at   DateTime
+  returned_at   DateTime?
 }

@@ -32,7 +32,7 @@ export default function AddBook(){
             body: JSON.stringify({
                 title: formData.get("title"),
                 author: formData.get("author"),
-                stock: formData.get("stock"),
+                stock: parseInt(formData.get("stock")?.toString() || "0"),
                 publisher: formData.get("publisher"),
                 published_at: formData.get("published_at"),
                 categories: selectedCategory,

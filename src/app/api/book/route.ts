@@ -1,10 +1,7 @@
 import prisma from "@/lib/db";
 import { NextRequest, NextResponse } from "next/server";
-interface Payload {
-    cover?: string | "";
-    title: string;
-    author: string;
-    publisher: string;
+import { Book } from "@prisma/client";
+interface Payload extends Omit<Book, "published_at"> {
     published_at: string;
     categories: string[];
 }
@@ -88,18 +85,19 @@ export async function GET(request: NextRequest){
 
 export async function POST(request: Request){
     try {
-        const { cover, title, author, publisher, published_at, categories } = await request.json() as Payload;
-        const transaction = await prisma.$transaction(async()=>{
-            const book = await prisma.book.create({
+        const { cover, title, author, publisher, stock, published_at, categories } = await request.json() as Payload;
+        const transaction = await prisma.$transaction(async(tx)=>{
+            const book = await tx.book.create({
                 data: {
                     cover,
                     title,
                     author,
                     publisher,
+                    stock,
                     published_at: new Date(published_at)
                 }
             });
-            const bookCategory = await prisma.bookCategory.createMany({ data: categories.map(c => {
+            const bookCategory = await tx.bookCategory.createMany({ data: categories.map(c => {
                 return {
                     bookId: book.id,
                     categoryId: c

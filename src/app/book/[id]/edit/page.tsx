@@ -24,6 +24,7 @@ export default function AddBook({ params} : { params: { id: string }}){
         title: "",
         cover: "",
         author: "",
+        stock: 0,
         publisher: "",
         published_at: "",
         categories: []
@@ -138,7 +139,7 @@ export default function AddBook({ params} : { params: { id: string }}){
                             <div className="label">
                                 <span className="label-text">Jumlah Ketersediaan</span>
                             </div>
-                            <input type="number" name="stock" className="input input-bordered w-full" />
+                            <input type="number" name="stock" className="input input-bordered w-full" value={book.stock} onChange={((e: FormEvent<HTMLInputElement>) => setBook({...book, stock: parseInt(e.currentTarget.value)}))}/>
                         </label>
                         <label className="form-control w-full">
                             <div className="label">

@@ -64,7 +64,7 @@ export default function Header(){
                         <li><Link href="/dashboard">Dashboard</Link></li>
                         {session.data ? session.data.user.role == "user" ? (
                             <li>
-                                <Link href="#">Peminjaman</Link>
+                                <Link href="/borrow">Peminjaman</Link>
                             </li>
                             ) : (
                             <li>

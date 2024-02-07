@@ -1,12 +1,9 @@
 import prisma from "@/lib/db";
 import { NextResponse } from "next/server";
+import { Book } from "@prisma/client";
 
 interface Params { params: { id: string }}
-interface Payload {
-    cover?: string | "";
-    title: string;
-    author: string;
-    publisher: string;
+interface Payload extends Omit<Book, "published_at"> {
     published_at: string;
     categories: string[];
 }
@@ -37,12 +34,13 @@ export async function DELETE(request: Request, { params }: Params){
 
 export async function PUT(request: Request, { params }: Params){
     try {
-        const { cover, title, author, publisher, published_at, categories } = await request.json() as Payload;
+        const { cover, title, author, publisher, published_at, stock, categories } = await request.json() as Payload;
         await prisma.$transaction([
             prisma.book.update({
                 data: {
                     cover,
                     title,
+                    stock,
                     author,
                     publisher,
                     published_at: new Date(published_at)

@@ -54,15 +54,13 @@ export const authOptions: NextAuthOptions = {
         },
         async session({ token, session }){
             const user = await prisma.user.findUnique({ where: { id: token.id }})
-            return {
-                ...session, 
-                user: {
-                    id: user!.id,
-                    role: user!.role,
-                    name: user!.name,
-                    email: user!.email
-                }
+            session.user = {
+                id: user!.id,
+                role: user!.role,
+                name: user!.name,
+                email: user!.email
             }
+            return session;
         },
         redirect(){
             return '/dashboard';
