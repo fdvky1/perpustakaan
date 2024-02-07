@@ -63,7 +63,7 @@ export default function BookDetail({ params }: { params: { id: string }}){
         <div className="container mx-auto pt-10 pb-16 px-2">
             {session.data?.user.role == "user" ? (
                 <>
-                <input type="checkbox" id="borrowModal" className="modal-toggle" checked={modal} readOnly/>
+                <input type="checkbox" id="borrowModal" className="modal-toggle" checked={modal} onChange={((e: FormEvent<HTMLInputElement>) => setModal(e.currentTarget.checked))}/>
                 <div className="modal" role="dialog">
                     <div className="modal-box">
                         <h3 className="font-bold text-lg">Anda yakin?</h3>

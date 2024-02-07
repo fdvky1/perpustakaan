@@ -20,7 +20,7 @@ export default function Borrow(){
         selected: "",
         input: "",
     });
-    
+
     const { setMessage } = useToastStore();
 
     const fetchBook = () => fetch("/api/borrow").then(async res => {
@@ -93,9 +93,7 @@ export default function Borrow(){
                                     <td>{b.book.title}</td>
                                     <td>{b.amount} Buku</td>
                                     <td>{b.returned_at ? new Date(b.returned_at).toLocaleDateString() : "-"}</td>
-                                    {!b.returned_at ? (
-                                        <td><button type="button" className="btn btn-primary py-0.5" onClick={(()=> setModal({ action: "return", status: true, selected: b.id}))}><i className="ri-check-line ri-xl text-white"></i></button></td>
-                                    ) : null}
+                                    <td><button type="button" disabled={!!b.returned_at} className="btn btn-primary py-0.5" onClick={(()=> setModal({ action: "return", status: true, selected: b.id}))}><i className="ri-check-line ri-xl text-white"></i></button></td>
                                 </tr> 
                             ))}
                         </tbody>
