@@ -25,7 +25,7 @@ export async function GET(request: Request, { params } : Params){
 
 export async function DELETE(request: Request, { params }: Params){
     try {
-        await prisma.book.delete({where: { id: params.id }});
+        await prisma.book.update({where: { id: params.id }, data: { deleted_at: new Date() } });
         return NextResponse.json({ message: "deleted successfully" })
     }catch(e){
         return NextResponse.json({ message: "Failed to delete"}, { status: 503 });

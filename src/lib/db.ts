@@ -19,6 +19,13 @@ prisma.$use(
                 if (deleted) return new Date();
                 return null;
             }
+        },
+        Book: {
+          field: "deleted_at",
+          createValue: (deleted) => {
+            if (deleted) return new Date();
+            return null;
+          }
         }
       },
     })
