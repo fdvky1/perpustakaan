@@ -31,11 +31,11 @@ model User {
   email         String    @unique
   password      String
   address       String
+  deleted_at    DateTime?
   role          Role      @default(user)
   Borrows Borrow[]
   borrowed_books      Borrow[] @relation("confirmed_borrow")
   returned_books      Borrow[] @relation("confirmed_return")
-  deleted_at    DateTime?
 }
 
 model Category {
@@ -52,6 +52,7 @@ model Book {
   stock         Int       @default(0)
   publisher     String
   published_at  DateTime
+  deleted_at    DateTime?
   categories    BookCategory[]
   borrows       Borrow[]
 }
@@ -77,6 +78,7 @@ model Borrow {
   borrowed_at   DateTime
   return_schedule DateTime
   fine  Int @default(0)
+  code String
   confirmed_borrow User? @relation("confirmed_borrow", fields: [confirmed_borrow_by], references: [id])
   confirmed_borrow_by String?
   returned_at   DateTime?

@@ -9,7 +9,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 
 import useToastStore from "@/store/useToastStore";
-import type { Book, Category } from "@prisma/client";
+import type { Book, Borrow, Category } from "@prisma/client";
 import "yet-another-react-lightbox/styles.css";
 
 interface ExtBook extends Omit<Book, "published_at"> {
@@ -26,9 +26,8 @@ export default function BookDetail({ params }: { params: { id: string }}){
     const { setMessage } = useToastStore();
     const [book, setBook] = useState<ExtBook>();
     const [open, setOpen] = useState<boolean>(false);
-    const [amount, setAmount] = useState<number>(1);
-    const [returnSchedule, setReturnSchedule] = useState<String>(new Date().toLocaleDateString())
-    const [modal, setModal] = useState<boolean>(false);
+    const [modal, setModal] = useState<{ action: "borrow" | "success_borrow", status: boolean, code?: string, input: { amount: number, returnSchedule: string }}>({ action: "borrow", status: false, input: { amount: 1, returnSchedule: new Date().toISOString().split('T')[0] }});
+    // const resetModal = ()=> setModal({ action: "borrow", status: false, code: "", input: { amount: 1, returnSchedule: new Date().toISOString().split('T')[0]}});
 
     useEffect(()=> {
         fetch("/api/book/"+params.id).then(async res => {
@@ -52,33 +51,40 @@ export default function BookDetail({ params }: { params: { id: string }}){
         method: "POST",
         body: JSON.stringify({
             bookId: params.id,
-            amount,
-            return_schedule: returnSchedule
+            amount: modal.input.amount,
+            return_schedule: modal.input.returnSchedule
         })
     }).then(async(res) => {
         if (res.status != 200) return setMessage("Terjadi kesalahaan saat meminjam buku", "error");
+        const json = (await res.json()).detail as Borrow;
         setMessage("Buku berhasil dipinjam", "success");
-        setModal(false);
-        router.push("/borrow")
+        setModal({ action: "success_borrow", status: true, code: json.code, input: { amount: 1, returnSchedule: new Date().toISOString().split('T')[0]}});
+        // router.push("/borrow")
     })
     return (
         <div className="container mx-auto pt-10 pb-16 px-2">
             {session.data?.user.role == "user" ? (
                 <>
-                <input type="checkbox" id="borrowModal" className="modal-toggle" checked={modal} onChange={((e: FormEvent<HTMLInputElement>) => setModal(e.currentTarget.checked))}/>
-                <div className="modal" role="dialog">
+                <input type="checkbox" id="borrowModal" className="modal-toggle" checked={modal.status} onChange={((e: FormEvent<HTMLInputElement>) => setModal({...modal, status: e.currentTarget.checked}))}/>
+                <div className="modal" role="dialog">.
                     <div className="modal-box">
-                        <h3 className="font-bold text-lg">Anda yakin?</h3>
-                        <p className="py-4">Anda akan meminjam buku ini sebanyak {amount} Buku!</p>
-                        <label className="form-control w-full">
-                            <div className="label">
-                                <span className="label-text mb-1">Tentukan tanggal pengembalian</span>
-                            </div>
-                            <input type="date" name="return_chedule" value={returnSchedule.toLocaleString()} onChange={((e: FormEvent<HTMLDataElement>) => setReturnSchedule(e.currentTarget.value))} className="input input-bordered w-full" />
-                        </label>
+                        <h3 className="font-bold text-lg">{modal.action == "borrow" ? "Anda yakin?" : "Pemberitahuan!"}</h3>
+                        <p className="mt-2 mb-1 text-sm">{modal.action == "borrow" ? `Anda akan meminjam buku ini sebanyak ${modal.input.amount} Buku!` : `Peminjaman Anda sedang diproses! Anda dapat menunjukan kode ${modal.code} kepada petugas`}</p>
+                        {modal.action == "borrow" ? (
+                            <label className="form-control w-full">
+                                <div className="label">
+                                    <span className="label-text mb-1">Tentukan tanggal pengembalian</span>
+                                </div>
+                                <input type="date" name="return_schedule" value={modal.input.returnSchedule} onChange={((e: FormEvent<HTMLDataElement>) => setModal({...modal, input:{ ...modal.input, returnSchedule: e.currentTarget.value}}))} className="input input-bordered w-full" />
+                            </label>
+                        ):(<></>)}
                         <div className="modal-action">
                             <label htmlFor="borrowModal" className="btn">Batalkan</label>
-                            <button className="btn btn-primary" onClick={borrowBook}>Pinjam</button>
+                            {modal.action == "borrow" ? (
+                                <button className="btn btn-primary" onClick={borrowBook}>Pinjam</button>
+                            ): (
+                                <Link href="/category" className="btn btn-primary">Lihat status</Link>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -189,7 +195,7 @@ export default function BookDetail({ params }: { params: { id: string }}){
                             </>
                         ) : (
                             <div className="flex gap-1">
-                                <input type="number" name="amount" id="amount" min={1} max={book?.stock||0} className="input input-bordered max-w-[6rem]" value={amount} onChange={((e: FormEvent<HTMLInputElement>) => setAmount(parseInt(e.currentTarget.value)))}/>
+                                <input type="number" name="amount" id="amount" min={1} max={book?.stock||0} className="input input-bordered max-w-[6rem]" value={modal.input.amount} onChange={((e: FormEvent<HTMLInputElement>) => setModal({...modal, input: {...modal.input, amount: parseInt(e.currentTarget.value)}}))}/>
                                 <label htmlFor="borrowModal" className="btn btn-primary">Pinjam Buku</label>
                             </div>
                         )}

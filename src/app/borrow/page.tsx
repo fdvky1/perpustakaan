@@ -13,6 +13,10 @@ interface ExtBorrow extends Omit<Borrow, "borrowed_at" | "returned_at" | "return
         id: string;
         title: string;
     }
+    user?: {
+        id: string;
+        name: string;
+    }
 }
 export default function Borrow(){
     const session = useSession();
@@ -69,12 +73,12 @@ export default function Borrow(){
                             <p>Anda akan mengembalikan buku {borrows.find(v => v.id == modal.selected)?.book.title}</p>
                         ):(
                             <>
-                                <p className="my-2">{modal.action == "confirmed_borrow" ? "Anda akan mengonfirmasi peminjaman ini" : "Buku akan ditetapkan hilang"}</p>
+                                <p className="mt-2 mb-1">{modal.action == "confirmed_borrow" ? "Anda akan mengonfirmasi peminjaman buku ini" : modal.action == "confirmed_return" ? "Anda akan mengonfirmasi pengembalian buku ini" : "Buku akan ditetapkan hilang"}</p>
                                 {
                                     modal.action == "confirmed_lost" ? (
                                     <label className="form-control w-full">
                                         <div className="label">
-                                            <span className="label-text mb-1">Denda(Rp)</span>
+                                            <span className="label-text mb-1 text-base">Denda(Rp)</span>
                                         </div>
                                         <input type="number" name="fine" value={modal.input} onChange={((e: FormEvent<HTMLInputElement>) => setModal({...modal, input: e.currentTarget.value}))} className="input input-bordered w-full" />
                                     </label>
@@ -94,10 +98,16 @@ export default function Borrow(){
                     <table className="table">
                         <thead>
                             <tr className="text-center">
+                                <th>Kode Peminjaman</th>
+                                {session.data && ["admin", "operator"].includes(session.data?.user.role) ? (
+                                    <th>Nama Peminjam</th>
+                                ): (
+                                    <></>
+                                )}
                                 <th>Tanggal Peminjaman</th>
                                 <th>Judul Buku</th>
                                 <th>Jumlah dipinjam</th>
-                                <th>Status</th>
+                                <th>Keterangan</th>
                                 <th>Jadwal pengembalian</th>
                                 <th>Tanggal dikembalikan</th>
                                 <th>Denda</th>
@@ -107,25 +117,31 @@ export default function Borrow(){
                         <tbody>
                             {borrows.map((b, i) => (
                                 <tr className="bg-base-200 text-center" key={i}>
-                                    <th>{new Date(b.borrowed_at).toLocaleDateString()}</th>
+                                    <th>{b.code}</th>
+                                    {session.data && ["admin", "operator"].includes(session.data?.user.role) ? (
+                                        <td>{b.user?.name || "-"}</td>
+                                    ): (
+                                        <></>
+                                    )}
+                                    <td>{new Date(b.borrowed_at).toLocaleDateString()}</td>
                                     <td>{b.book.title}</td>
                                     <td>{b.amount} Buku</td>
                                     <td>{b.status == "pending_borrow" ? "Menunggu konfirmasi peminjaman" : b.status == "pending_return" ? "Menunggu konfirmasi pengembalian" : b.status == "confirmed_borrow" ? "Sedang dipinjam" : b.status == "confirmed_lost" ? "Buku Hilang" : "Telah dikembalikan" }</td>
                                     <td>{new Date(b.return_schedule).toLocaleDateString()}</td>
                                     <td>{b.returned_at ? new Date(b.returned_at).toLocaleDateString() : "-"}</td>
-                                    <td>{b.fine}</td>
+                                    <td>{b.fine || "-"}</td>
                                     <td className="flex gap-1.5">
                                         {session.data && ["admin", "operator"].includes(session.data?.user.role) ? (
                                             <>
-                                            <button type="button" className="btn btn-primary" disabled={b.status != "pending_borrow"} onClick={(()=> setModal({ action: b.returned_at ? "confirmed_return" : "confirmed_borrow", status: true, selected: b.id}))}>
-                                                {b.returned_at ? "Kembali" : "Pinjam"}
+                                            <button type="button" className="btn btn-primary" disabled={["confirmed_lost"].includes(b.status) || !!b.returned_at} onClick={(()=> setModal({ action: b.status != "pending_borrow" ? "confirmed_return" : "confirmed_borrow", status: true, selected: b.id}))}>
+                                                {b.status != "pending_borrow" ? "Kembali" : "Pinjam"}
                                             </button>
-                                            <button type="button" className="btn btn-error" disabled={["confirmed_lost", "pending_borrow"].includes(b.status)} onClick={(()=> setModal({ action: "confirmed_lost", status: true, selected: b.id}))}>
+                                            <button type="button" className="btn btn-error" disabled={["confirmed_lost", "pending_borrow"].includes(b.status) || !!b.returned_at} onClick={(()=> setModal({ action: "confirmed_lost", status: true, selected: b.id}))}>
                                                 Hilang
                                             </button>
                                             </>
                                         ) : (
-                                            <button type="button" className="btn btn-primary" onClick={(()=> setModal({ action: "return", status: true, selected: b.id}))}>
+                                            <button type="button" className="btn btn-primary" onClick={(()=> setModal({ action: "return", status: true, selected: b.id}))} disabled={ b.status != "confirmed_borrow"}>
                                                 {/* <i className="ri-information-line ri-xl ri-fw"></i> */}
                                                 Kembalikan
                                             </button>

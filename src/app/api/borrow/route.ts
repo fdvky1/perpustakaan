@@ -1,8 +1,7 @@
-import { getAuthSession } from '@/lib/auth'
-
 import prisma from "@/lib/db";
+import { randomBytes } from "crypto";
 import { NextResponse } from "next/server";
-
+import { getAuthSession } from "@/lib/auth";
 interface Payload {
     bookId: string;
     amount: number;
@@ -24,7 +23,15 @@ export async function GET(request: Request){
                         id: true,
                         title: true
                     }
-                }
+                },
+                ...(session!.user.role != "user" ? {
+                    user: {
+                        select: {
+                            id: true,
+                            name: true
+                        }
+                    }
+                } : {})
             }
         });
         return NextResponse.json({ data: borrows });
@@ -61,7 +68,8 @@ export async function POST(request: Request) {
                     bookId: bookId,
                     borrowed_at: new Date(),
                     amount,
-                    return_schedule: new Date(return_schedule)
+                    return_schedule: new Date(return_schedule),
+                    code: randomBytes(4).toString("hex")
                 }
             })
             return {
