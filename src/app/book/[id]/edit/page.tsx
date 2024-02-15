@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 import { useState, useEffect, FormEvent } from "react";
 import type { Book, Category } from "@prisma/client";
 
-interface ExtBook extends Omit<Book, "published_at"> {
+interface ExtBook extends Omit<Book, "published_at"|"deleted_at"> {
     published_at: string;
     categories: {
         category: Category
