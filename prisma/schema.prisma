@@ -16,6 +16,15 @@ enum Role {
   operator
   user
 }
+
+enum Borrow_Status {
+  pending_borrow
+  pending_return
+  confirmed_borrow
+  confirmed_return
+  confirmed_lost
+}
+
 model User {
   id            String    @id @default(cuid())
   name          String
@@ -24,6 +33,9 @@ model User {
   address       String
   role          Role      @default(user)
   Borrows Borrow[]
+  borrowed_books      Borrow[] @relation("confirmed_borrow")
+  returned_books      Borrow[] @relation("confirmed_return")
+  deleted_at    DateTime?
 }
 
 model Category {
@@ -61,6 +73,13 @@ model Borrow {
   book          Book @relation(fields: [bookId], references: [id])
   bookId        String
   amount        Int
+  status        Borrow_Status @default(pending_borrow)
   borrowed_at   DateTime
+  return_schedule DateTime
+  fine  Int @default(0)
+  confirmed_borrow User? @relation("confirmed_borrow", fields: [confirmed_borrow_by], references: [id])
+  confirmed_borrow_by String?
   returned_at   DateTime?
+  confirmed_return User? @relation("confirmed_return", fields: [confirmed_return_by], references: [id])
+  confirmed_return_by String?
 }

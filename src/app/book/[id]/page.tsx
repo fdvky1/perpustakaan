@@ -27,6 +27,7 @@ export default function BookDetail({ params }: { params: { id: string }}){
     const [book, setBook] = useState<ExtBook>();
     const [open, setOpen] = useState<boolean>(false);
     const [amount, setAmount] = useState<number>(1);
+    const [returnSchedule, setReturnSchedule] = useState<String>(new Date().toLocaleDateString())
     const [modal, setModal] = useState<boolean>(false);
 
     useEffect(()=> {
@@ -51,7 +52,8 @@ export default function BookDetail({ params }: { params: { id: string }}){
         method: "POST",
         body: JSON.stringify({
             bookId: params.id,
-            amount
+            amount,
+            return_schedule: returnSchedule
         })
     }).then(async(res) => {
         if (res.status != 200) return setMessage("Terjadi kesalahaan saat meminjam buku", "error");
@@ -68,6 +70,12 @@ export default function BookDetail({ params }: { params: { id: string }}){
                     <div className="modal-box">
                         <h3 className="font-bold text-lg">Anda yakin?</h3>
                         <p className="py-4">Anda akan meminjam buku ini sebanyak {amount} Buku!</p>
+                        <label className="form-control w-full">
+                            <div className="label">
+                                <span className="label-text mb-1">Tentukan tanggal pengembalian</span>
+                            </div>
+                            <input type="date" name="return_chedule" value={returnSchedule.toLocaleString()} onChange={((e: FormEvent<HTMLDataElement>) => setReturnSchedule(e.currentTarget.value))} className="input input-bordered w-full" />
+                        </label>
                         <div className="modal-action">
                             <label htmlFor="borrowModal" className="btn">Batalkan</label>
                             <button className="btn btn-primary" onClick={borrowBook}>Pinjam</button>

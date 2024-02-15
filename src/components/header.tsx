@@ -72,6 +72,10 @@ export default function Header(){
                                 <ul className="menu px-4 min-h-full bg-base-200 text-base-content space-y-1">
                                     <li><Link href="/category">Kategori</Link></li>
                                     <li><Link href="/book">Buku</Link></li>
+                                    <li><Link href="/borrow">Peminjaman</Link></li>
+                                    { session.data.user.role == "admin" ? (
+                                        <li><Link href="/user">Pengguna</Link></li>
+                                    ) : (<></>)}
                                 </ul>
                             </li> 
                             )

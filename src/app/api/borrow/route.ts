@@ -6,15 +6,18 @@ import { NextResponse } from "next/server";
 interface Payload {
     bookId: string;
     amount: number;
+    return_schedule: string;
 }
 
 export async function GET(request: Request){
     try {
         const session = await getAuthSession();
         const borrows = await prisma.borrow.findMany({
-            where: {
-                userId: session!.user.id
-            },
+            ...(session!.user.role == "user" ? {
+                where: {
+                    userId: session!.user.id
+                }
+            } : {}),
             include: {
                 book: {
                     select: {
@@ -33,7 +36,7 @@ export async function GET(request: Request){
 export async function POST(request: Request) {
     try {
         const session = await getAuthSession();
-        const { amount, bookId } = await request.json() as Payload;
+        const { amount, bookId, return_schedule } = await request.json() as Payload;
         const transaction = await prisma.$transaction(async(tx)=>{
             const selectedBook = await tx.book.findUnique({
                 where: {
@@ -44,31 +47,32 @@ export async function POST(request: Request) {
                 }
             });
             if(!selectedBook) throw new Error("Book not found");
-            const book = await tx.book.update({
-                data: {
-                    stock: selectedBook.stock - amount
-                },
-                where: {
-                    id: bookId
-                }
-            });
+            // const book = await tx.book.update({
+            //     data: {
+            //         stock: selectedBook.stock - amount
+            //     },
+            //     where: {
+            //         id: bookId
+            //     }
+            // });
             const borrow = await tx.borrow.create({
                 data: {
                     userId: session!.user.id,
                     bookId: bookId,
                     borrowed_at: new Date(),
-                    amount
+                    amount,
+                    return_schedule: new Date(return_schedule)
                 }
             })
             return {
                 borrow,
-                book
+                // book
             }
         });
 
         return NextResponse.json({
             message: "Success",
-            detail: transaction.book
+            detail: transaction.borrow
         })
     } catch(e){
         console.log(e)
