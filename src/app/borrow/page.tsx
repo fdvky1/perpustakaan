@@ -47,7 +47,11 @@ export default function Borrow(){
             if (res.status == 200){
                 resetModal();
                 fetchBook();
-                setMessage("Berhasil mengembalikan buku", "success");
+                if(modal.action == "confirmed_lost") {
+                    setMessage("Berhasil menetapkan status hilang", "success")
+                }else{
+                    setMessage(`Berhasil ${modal.action == "return" ? "mengembalikan" : modal.action == "confirmed_borrow" ? "mengonfirmasi peminjaman" : "mengonfirmasi pengembalian" } buku`, "success");
+                }
             } else {
                 setMessage("Terjadi kesalahan saat mengembalikan buku", "error");
             }
