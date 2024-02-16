@@ -8,7 +8,14 @@ const nextConfig = {
             hostname: "placehold.co",
             port: "",
             pathname: "/**"
-        },{
+        },
+        {
+            protocol: "https",
+            hostname: "cdn.gramedia.com",
+            port: "",
+            pathname: "/**"
+        },
+        {
             protocol: "https",
             hostname: "utfs.io",
             port: "",
