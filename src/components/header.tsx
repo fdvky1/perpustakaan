@@ -49,6 +49,9 @@ export default function Header(){
                                 </Link>
                             </li> */}
                             <li>
+                                <Link href="/profile">Profil</Link>
+                            </li>
+                            <li>
                                 <label htmlFor="modal_logout">Keluar</label>
                             </li>
                         </ul>
