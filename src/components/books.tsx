@@ -5,43 +5,16 @@ import Image from "next/image"
 import { useEffect, useState } from "react";
 import type { Book, Category } from "@prisma/client";
 
-interface ExtCategory extends Category {
-    books: Book[];
+interface ExtBook extends Omit<Book, "published_at"> {
+
 }
 
-interface ExtBook extends Book {
-    categories: {
-        category: Category
-    }[];
-}
-
-export default function Books(){
-    const [data, setData] = useState<ExtCategory[]>([]);
-    const fetchBooks = (keyword: string = "") => fetch("/api/book?include=category").then( async res => {
+export default function Books({ category, keyword } : { category: string, keyword: string}){
+    const [data, setData] = useState<ExtBook[]>([]);
+    const fetchBooks = () => fetch(`/api/book?${category.length > 0 ? "category=" + category + "&" : ""}${category.length > 0 ? "keyword=" + keyword + "&" : ""}`).then( async res => {
         if (res.status == 200){
             const json = (await res.json()).data as ExtBook[];
-            const sorted: ExtCategory[] = [];
-
-            json.forEach(book => {
-                const categories = book.categories.map(entry => entry.category);
-                const first = categories.length > 0 ? categories[0] : null;
-                const existing = sorted.find(v => v.id == (first?.id || "uncategorized"));
-                if (existing){
-                    existing.books.push(book);
-                }else if (first){
-                    sorted.push({
-                        ...first,
-                        books: [book]
-                    });
-                }else{
-                    sorted.push({
-                        id: "uncategorized",
-                        name: "Tanpa Kategori",
-                        books: [book]
-                    });
-                }
-            });
-            setData(sorted.sort((_a, b) => b.id == "uncategorized" ? -1 : 1));
+            setData(json);
         }
     });
 
@@ -50,34 +23,25 @@ export default function Books(){
     }, []);
 
     return (
-        <div>
-            <div>
-                {data.map((d, i) => (
-                    <div className="w-full my-3 " key={i}>
-                        <h4 className="text-base font-semibold mb-3">{d.name}</h4>
-                        <div className="flex gap-2 w-full overflow-x-auto overflow-y-hidden">
-                            {d.books.map((b, _i) => (
-                                <Link href={"/book/" + b.id} key={`${i}-${_i}`}>
-                                    <div className="card card-compact w-44 bg-base-100 shadow-xl">
-                                        <figure className="relative h-44">
-                                            <Image
-                                                alt={b.title}
-                                                src={b.cover || "https://placehold.co/200x200?text=Foto%20Sampul"}
-                                                fill={true}
-                                                style={{ objectFit: "cover" }}
-                                            />
-                                        </figure>
-                                        <div className="card-body">
-                                            <h2 className="card-title text-ellipsis whitespace-nowrap overflow-x-hidden">{b.title}</h2>
-                                            <p className="m-0">{b.author}</p>
-                                        </div>
-                                    </div>
-                                </Link>
-                            ))}
+        <div className="flex flex-wrap gap-2 w-full justify-center">
+            {data.map((d, i) => (
+                <Link href={"/book/" + d.id} key={i}>
+                    <div className="card card-compact w-44 bg-base-100 shadow-xl h-64">
+                        <figure className="relative h-44">
+                            <Image
+                                alt={d.title}
+                                src={d.cover || "https://placehold.co/200x200?text=Foto%20Sampul"}
+                                fill={true}
+                                style={{ objectFit: "cover" }}
+                            />
+                        </figure>
+                        <div className="card-body">
+                            <h2 className="card-title text-ellipsis whitespace-nowrap overflow-x-hidden">{d.title}</h2>
+                            <p className="m-0">{d.author}</p>
                         </div>
                     </div>
-                ))}
-            </div>
+                </Link>
+            ))}
         </div>
     )
 }
