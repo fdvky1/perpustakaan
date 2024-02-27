@@ -1,19 +1,25 @@
 "use client"
 import Link from "next/link"
 import Image from "next/image"
-import Books from "@/components/books"
 import { debounce } from "lodash";
-import { FormEvent, useCallback, useEffect, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
 import type { Book, Category } from "@prisma/client";
+import Search from "@/components/search";
 
 interface ExtBook extends Omit<Book, "published_at"> {
 
 }
 
-export default function Book(){
+export default function Book({
+    searchParams
+}: {
+    searchParams?: {
+        keyword?: string;
+    }
+}){
+    const keyword = searchParams?.keyword || ""
     const session = useSession();
-    const [keyword, setKeyword] = useState("")
     const [category, setCategory] = useState("")
 
     const [book, setBook] = useState<ExtBook[]>([]);
@@ -41,14 +47,11 @@ export default function Book(){
         fetchBooks();
     }, [keyword, category]);
 
-    const debouncedHandleSearch = useCallback(debounce(setKeyword, 1000), []);
     return (
         <div className="container mx-auto pt-10 pb-16 px-2">
             <div className="flex w full justify-between mb-5">
                 <div className="flex items-center gap-1">
-                    <div className="form-control">
-                        <input type="text" placeholder="Search" className="input input-bordered w-24 md:w-auto" onChange={(e: FormEvent<HTMLInputElement>)=>debouncedHandleSearch(e.currentTarget.value)}/>
-                    </div>
+                    <Search/>
                     <div className="">
                         <div className="dropdown">
                             <div className="dropdown">
