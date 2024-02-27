@@ -12,6 +12,7 @@ export async function PUT(request: Request, { params }: { params: {id: string}})
     try {
         const session = await getAuthSession();
         const { type, fine } = (await request.json()) as Payload;
+        if(session!.user.role == "user" && type != "return") return NextResponse.json({ message: "Forbidden"}, { status: 403 })
         const transaction = await prisma.$transaction(async(tx) => {
             const findBorrow = await tx.borrow.findUnique({
                 where: {
