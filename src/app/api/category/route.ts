@@ -7,6 +7,7 @@ interface Payload {
 
 export async function GET(request: NextRequest){
     try {
+        const keyword = request.nextUrl.searchParams.get("keyword");
         const categories = await (!!request.nextUrl.searchParams.get("include") ? prisma.category.findMany({
             include: {
                 books: {
@@ -15,7 +16,15 @@ export async function GET(request: NextRequest){
                     }
                 }
             }
-        }) : prisma.category.findMany());
+        }) : prisma.category.findMany({
+            ...(!!keyword ? {
+                where: {
+                    OR: [
+                        { name: { contains: keyword, mode: 'insensitive'}},
+                    ]
+                }
+            } : {})
+        }));
         return NextResponse.json({ data: categories });
     }catch(e){
         return NextResponse.json({ message: "Failed to get categories"}, { status: 503})

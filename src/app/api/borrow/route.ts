@@ -1,6 +1,6 @@
 import prisma from "@/lib/db";
 import { randomBytes } from "crypto";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { getAuthSession } from "@/lib/auth";
 interface Payload {
     bookId: string;
@@ -8,8 +8,9 @@ interface Payload {
     return_schedule: string;
 }
 
-export async function GET(request: Request){
+export async function GET(request: NextRequest){
     try {
+        const keyword = request.nextUrl.searchParams.get("keyword");
         const session = await getAuthSession();
         const borrows = await prisma.borrow.findMany({
             ...(session!.user.role == "user" ? {
@@ -32,7 +33,17 @@ export async function GET(request: Request){
                         }
                     }
                 } : {})
-            }
+            },
+            orderBy: {
+                borrowed_at: 'desc'
+            },
+            ...(keyword ? {
+                where: {
+                    OR: [
+                        { code: { contains: keyword, mode: 'insensitive'}},
+                    ]
+                }
+            }: {})
         });
         return NextResponse.json({ data: borrows });
     }catch(e){
@@ -54,14 +65,6 @@ export async function POST(request: Request) {
                 }
             });
             if(!selectedBook) throw new Error("Book not found");
-            // const book = await tx.book.update({
-            //     data: {
-            //         stock: selectedBook.stock - amount
-            //     },
-            //     where: {
-            //         id: bookId
-            //     }
-            // });
             const borrow = await tx.borrow.create({
                 data: {
                     userId: session!.user.id,

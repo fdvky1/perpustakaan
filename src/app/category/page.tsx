@@ -1,9 +1,17 @@
 "use client"
-import useToastStore from "@/store/useToastStore";
 import { FormEvent, useEffect, useState } from "react"
 import type { Category } from "@prisma/client";
+import useToastStore from "@/store/useToastStore";
+import Search from "@/components/search";
 
-export default function CategoryPage(){
+export default function CategoryPage({
+    searchParams
+}: {
+    searchParams?: {
+        keyword?: string;
+    }
+}){
+    const keyword = searchParams?.keyword || ""
     const [modal, setModal] = useState<{action: "create" | "update" | "delete" | "", status: boolean, selected?: string, input?: string}>({
         action: "",
         status: false,
@@ -16,14 +24,14 @@ export default function CategoryPage(){
 
     const resetModal = ()=> setModal({ action: "", status: false, input: "", selected: ""});
 
-    const fetchCategory = () => fetch("/api/category").then(async res => {
+    const fetchCategory = () => fetch(`/api/category?${keyword.length > 0 ? "keyword=" + keyword + "&" : ""}`).then(async res => {
         const json = await res.json();
         setCategories(json.data);
     })
 
     useEffect(()=>{
         fetchCategory();    
-    }, []);
+    }, [keyword]);
 
     const create = async (e: FormEvent<HTMLFormElement>)=>{
         e.preventDefault();
@@ -95,7 +103,8 @@ export default function CategoryPage(){
                 </div>
             </div>
             <div className="space-y-2">
-                <div className="w-full flex justify-end">
+                <div className="w-full flex justify-between">
+                    <Search/>
                     <button onClick={(()=>setModal({ action: "create", status: true, input: "", selected: ""}))} className="btn">Tambahkan kategori</button>
                 </div>
                 <div className="overflow-x-auto">
@@ -122,6 +131,13 @@ export default function CategoryPage(){
                                     </td>
                                 </tr> 
                             ))}
+                            {categories.length == 0 ? (
+                                <tr className="w-full text-center">
+                                    <td colSpan={3}>
+                                        Tidak ada data
+                                    </td>
+                                </tr>
+                            ): null}
                         </tbody>
                     </table>
                 </div>

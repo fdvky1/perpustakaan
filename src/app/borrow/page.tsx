@@ -2,9 +2,9 @@
 
 import { FormEvent, useEffect, useState } from "react";
 import { Borrow } from "@prisma/client";
-import useToastStore from "@/store/useToastStore";
 import { useSession } from "next-auth/react";
-
+import useToastStore from "@/store/useToastStore";
+import Search from "@/components/search";
 interface ExtBorrow extends Omit<Borrow, "borrowed_at" | "returned_at" | "return_schedule"> {
     borrowed_at: string;
     returned_at: string;
@@ -18,8 +18,15 @@ interface ExtBorrow extends Omit<Borrow, "borrowed_at" | "returned_at" | "return
         name: string;
     }
 }
-export default function Borrow(){
+export default function Borrow({
+    searchParams
+}: {
+    searchParams?: {
+        keyword?: string;
+    }
+}){
     const session = useSession();
+    const keyword = searchParams?.keyword || "";
     const [borrows, setBorrows] = useState<ExtBorrow[]>([]);
     const [modal, setModal] = useState<{action: "return" | "confirmed_borrow" | "confirmed_return" | "confirmed_lost" | "", status: boolean, selected?: string, input?: string}>({
         action: "",
@@ -30,7 +37,7 @@ export default function Borrow(){
 
     const { setMessage } = useToastStore();
 
-    const fetchBook = () => fetch("/api/borrow").then(async res => {
+    const fetchBook = () => fetch(`/api/borrow?${keyword.length > 0 ? "keyword=" + keyword + "&" : ""}`).then(async res => {
         if (res.status == 200){
             const json = await res.json();;
             setBorrows(json.data  as ExtBorrow[])
@@ -39,7 +46,7 @@ export default function Borrow(){
 
     useEffect(()=> {
         fetchBook();    
-    }, []);
+    }, [keyword]);
     const resetModal = ()=> setModal({ action: "", status: false, input: "", selected: ""});
 
     const updateStatus = (e: FormEvent<HTMLFormElement>) => {
@@ -94,6 +101,9 @@ export default function Borrow(){
                 </div>
             </div>
             <div className="space-y-2">
+                <div className="mb-3">
+                    <Search/>
+                </div>
                 <div className="overflow-x-auto">
                     <table className="table">
                         <thead>
@@ -150,6 +160,13 @@ export default function Borrow(){
                                     {/* <td><button type="button" disabled={!!b.returned_at} className="btn btn-primary py-0.5" onClick={(()=> setModal({ action: "return", status: true, selected: b.id}))}><i className="ri-check-line ri-xl text-white"></i></button></td> */}
                                 </tr> 
                             ))}
+                            {borrows.length == 0 ? (
+                                <tr className="w-full text-center">
+                                    <td colSpan={session.data?.user.role == "user" ? 9 : 10}>
+                                        Tidak ada data
+                                    </td>
+                                </tr>
+                            ): null}
                         </tbody>
                     </table>
                 </div>
