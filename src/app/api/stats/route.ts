@@ -7,6 +7,7 @@ export async function GET(){
     try {
         return NextResponse.json({ data: {
             usersTotal,
+            operatorTotal,
             booksTotal
         }})
     }catch(e){
