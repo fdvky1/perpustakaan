@@ -1,5 +1,6 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import type { Role, User } from '@prisma/client';
+import { getAuthSession } from '@/lib/auth'
 import prisma from "@/lib/db";
 import { hash } from 'bcrypt';
 
@@ -11,14 +12,34 @@ interface Payload {
     address: string;
 }
 
-export async function GET(){
-    const users = await prisma.user.findMany({select: {
-        id: true,
-        name: true,
-        email: true,
-        address: true,
-        role: true
-    }});
+export async function GET(request: NextRequest){
+    const keyword = request.nextUrl.searchParams.get("keyword");
+    const session = await getAuthSession();
+    const users = await prisma.user.findMany({
+        select: {
+            id: true,
+            name: true,
+            email: true,
+            address: true,
+            role: true
+        },
+        where: {
+            id: {
+                not: session?.user.id
+            },
+            role: {
+                not: "admin"
+            },
+            ...(keyword ? {
+                    OR: [
+                        { name: { contains: keyword, mode: 'insensitive'}},
+                        { email: { contains: keyword, mode: 'insensitive'}},
+                        { address: { contains: keyword, mode: 'insensitive'}},
+                    ]
+                }
+            : {})
+        }
+    });
 
     return NextResponse.json({ data: users})
 }

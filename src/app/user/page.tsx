@@ -1,15 +1,19 @@
 "use client"
-import useToastStore from "@/store/useToastStore";
 import { Role, User } from "@prisma/client"
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react"
+import useToastStore from "@/store/useToastStore";
+import Search from "@/components/search";
 
 interface ExtUser extends Omit<User, "password"|"id"|"deleted_at">{
     id?: string;
     password?: string
 }
 
-export default function User(){
+export default function User({ searchParams }: { searchParams?: {
+    keyword?: string;
+}}){
+    const keyword = searchParams?.keyword || "";
     const router = useRouter();
     const [user, setUser] = useState<ExtUser[]>([]);
     const [modal, setModal] = useState<{action: "create" | "delete" | "update", status: boolean, selected?: string, input?: ExtUser}>({
@@ -28,14 +32,14 @@ export default function User(){
     const { setMessage } = useToastStore();
     const resetModal = ()=> setModal({ action: "create", status: false, selected: "", input: { id: "", name: "", role: "user", email: "", address: "", password: ""}});
 
-    const fetchUsers = () => fetch("/api/user").then(async res => {
+    const fetchUsers = () => fetch(`/api/user?${keyword.length > 0 ? "keyword=" + keyword + "&" : ""}`).then(async res => {
         // if(res.status !== 200) return router.push("/dashboard");
         setUser((await res.json()).data as ExtUser[]);
     });
 
     useEffect(()=> {
         fetchUsers()
-    }, []);
+    }, [keyword]);
 
     const createUser = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -139,7 +143,8 @@ export default function User(){
                     </div>
                 </div>
             </div>
-            <div className="w-full flex justify-end">
+            <div className="w-full flex justify-between mb-3">
+                <Search/>
                 <button onClick={(()=>setModal({ action: "create", status: true, selected: "", input: { id: "", name: "", role: "user", email: "", address: "", password: ""}}))} className="btn">Tambahkan pengguna</button>
             </div>
             <div className="space-y-2">
@@ -171,6 +176,13 @@ export default function User(){
                                     </td>
                                 </tr> 
                             ))}
+                            {user.length == 0 ? (
+                                <tr className="w-full text-center">
+                                    <td colSpan={5}>
+                                        Tidak ada data
+                                    </td>
+                                </tr>
+                            ): null}
                         </tbody>
                     </table>
                 </div>
