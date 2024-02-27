@@ -48,35 +48,33 @@ export default function Book({
 
     return (
         <div className="container mx-auto pt-10 pb-16 px-2">
-            <div className="flex w full justify-between mb-5">
-                <div className="flex items-center gap-1">
+            <div className="flex flex-col-reverse md:flex-row w-full gap-2 justify-between mb-5">
+                <div className="w-full flex items-center gap-1">
                     <Search/>
-                    <div className="">
-                        <div className="dropdown">
-                            <div className="dropdown">
-                                <div tabIndex={0} role="button" className="btn m-1">{category.length > 0 ? categories.find(v => v.id == category)!.name : "Pilih Kategori" }</div>
-                                <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
-                                    <li>
-                                        <button onClick={()=>setCategory("")}>Pilih Kategori</button>
+                    <div className="dropdown w-1/3 sm:max-w-[15rem] sm:w-full">
+                        <div className="dropdown w-full">
+                            <div tabIndex={0} role="button" className="btn m-1 w-full">{category.length > 0 ? categories.find(v => v.id == category)!.name : "Pilih Kategori" }</div>
+                            <ul tabIndex={0} className="dropdown-content z-[1] menu p-2 shadow bg-base-100 rounded-box w-52">
+                                <li>
+                                    <button onClick={()=>setCategory("")}>Pilih Kategori</button>
+                                </li>
+                                {categories.map((category, index) => (
+                                    <li key={"c-"+index}>
+                                        <button onClick={()=>setCategory(category.id)}>{category.name}</button>
                                     </li>
-                                    {categories.map((category, index) => (
-                                        <li key={"c-"+index}>
-                                            <button onClick={()=>setCategory(category.id)}>{category.name}</button>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </div>
+                                ))}
+                            </ul>
                         </div>
                     </div>
                 </div>
                 {session.data && ["admin", "operator"].includes(session.data?.user.role) ? (
-                    <Link href="/book/add" className="btn btn-primary">Tambahkan buku</Link>
+                    <Link href="/book/add" className="btn btn-primary max-w-44 ml-auto">Tambahkan buku</Link>
                 ) : (<></>)}
             </div>
-            <div className="flex flex-wrap gap-2 w-full">
+            <div className="flex flex-wrap gap-2 w-full justify-center">
                 {book.map((d, i) => (
                     <Link href={"/book/" + d.id} key={i}>
-                        <div className="card card-compact w-44 bg-base-100 shadow-xl h-64">
+                        <div className="card card-compact w-40 md:w-44 bg-base-100 shadow-xl h-64">
                             <figure className="relative h-44">
                                 <Image
                                     alt={d.title}

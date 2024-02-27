@@ -23,8 +23,8 @@ export default function Search(){
     const debouncedHandleSearch = useCallback(debounce(handleSearch, 1000), []);
 
     return (
-        <div className="form-control">
-            <input type="text" placeholder="Search" className="input input-bordered w-24 md:w-auto" onChange={(e: FormEvent<HTMLInputElement>)=>debouncedHandleSearch(e.currentTarget.value)} defaultValue={searchParams.get('keyword')?.toString()}/>
+        <div className="form-control w-[67%] sm:max-w-[15rem] sm:w-full">
+            <input type="text" placeholder="Search" className="input input-bordered md:w-auto" onChange={(e: FormEvent<HTMLInputElement>)=>debouncedHandleSearch(e.currentTarget.value)} defaultValue={searchParams.get('keyword')?.toString()}/>
         </div>
     )
 }
