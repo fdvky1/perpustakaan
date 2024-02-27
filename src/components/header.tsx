@@ -33,28 +33,34 @@ export default function Header(){
                     <a className="btn btn-ghost text-xl">Perpustakaan</a>
                 </div>
                 <div className="flex-none">
-                    <div className="dropdown dropdown-end">
-                        <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
-                            <div className="avatar placeholder">
-                                <div className="bg-neutral text-neutral-content rounded-full w-8">
-                                    <span className="text-xs">{session.data?.user.name?.split(" ").map(v => v.charAt(0)).join("").toUpperCase()}</span>
+                    <div className="flex gap-1">
+                        <div className="flex flex-col">
+                            <span className="">{session.data?.user.name}</span>
+                            <span className="text-xs ml-auto">{session.data?.user.role == "admin" ? "Administrator" : session.data?.user.role == "operator" ? "Petugas" : "Pengguna"}</span>
+                        </div>
+                        <div className="dropdown dropdown-end">
+                            <div tabIndex={0} role="button" className="btn btn-ghost btn-circle avatar">
+                                <div className="avatar placeholder">
+                                    <div className="bg-neutral text-neutral-content rounded-full w-8">
+                                        <span className="text-xs">{session.data?.user.name?.split(" ").map(v => v.charAt(0)).join("").toUpperCase()}</span>
+                                    </div>
                                 </div>
                             </div>
+                            <ul tabIndex={0} className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
+                                {/* <li>
+                                    <Link href="/profile" className="justify-between">
+                                        Profile
+                                        <span className="badge">New</span>
+                                    </Link>
+                                </li> */}
+                                <li>
+                                    <Link href="/profile">Profil</Link>
+                                </li>
+                                <li>
+                                    <label htmlFor="modal_logout">Keluar</label>
+                                </li>
+                            </ul>
                         </div>
-                        <ul tabIndex={0} className="mt-3 z-[1] p-2 shadow menu menu-sm dropdown-content bg-base-100 rounded-box w-52">
-                            {/* <li>
-                                <Link href="/profile" className="justify-between">
-                                    Profile
-                                    <span className="badge">New</span>
-                                </Link>
-                            </li> */}
-                            <li>
-                                <Link href="/profile">Profil</Link>
-                            </li>
-                            <li>
-                                <label htmlFor="modal_logout">Keluar</label>
-                            </li>
-                        </ul>
                     </div>
                 </div>
             </div>
