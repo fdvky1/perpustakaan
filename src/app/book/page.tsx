@@ -1,8 +1,7 @@
 "use client"
 import Link from "next/link"
 import Image from "next/image"
-import { debounce } from "lodash";
-import { useCallback, useEffect, useState } from "react"
+import { useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
 import type { Book, Category } from "@prisma/client";
 import Search from "@/components/search";
