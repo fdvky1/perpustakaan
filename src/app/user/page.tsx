@@ -163,7 +163,7 @@ export default function User({ searchParams }: { searchParams?: {
                             {user.map((b, i) => (
                                 <tr className="bg-base-200 text-center" key={i}>
                                     <th>{b.name}</th>
-                                    <td className="capitalize">{b.role}</td>
+                                    <td className="capitalize">{b.role == "admin" ? "Administrator" : b.role == "operator" ? "Petugas" : "Pengguna"}</td>
                                     <td>{b.email}</td>
                                     <td>{b.address}</td>
                                     <td className="flex gap-1.5 w-full justify-center">
