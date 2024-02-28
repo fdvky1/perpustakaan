@@ -83,7 +83,7 @@ export default function BookDetail({ params }: { params: { id: string }}){
                             {modal.action == "borrow" ? (
                                 <button className="btn btn-primary" onClick={borrowBook}>Pinjam</button>
                             ): (
-                                <Link href="/category" className="btn btn-primary">Lihat status</Link>
+                                <Link href={"/borrow?keyword=" + modal.code} className="btn btn-primary">Lihat status</Link>
                             )}
                         </div>
                     </div>
