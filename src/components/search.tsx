@@ -20,7 +20,7 @@ export default function Search(){
         replace(`${pathname}?${params.toString()}`);
     }
 
-    const debouncedHandleSearch = useCallback(debounce(handleSearch, 1000), []);
+    const debouncedHandleSearch = useCallback(debounce(handleSearch, 300), []);
 
     return (
         <div className="form-control w-[67%] sm:max-w-[15rem] sm:w-full">
