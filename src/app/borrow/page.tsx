@@ -5,6 +5,7 @@ import { useSession } from "next-auth/react";
 import useToastStore from "@/store/useToastStore";
 import Search from "@/components/search";
 import type { Borrow } from "@prisma/client";
+import Link from "next/link";
 
 interface ExtBorrow extends Omit<Borrow, "borrowed_at" | "returned_at" | "return_schedule"> {
     borrowed_at: string;
@@ -102,8 +103,11 @@ export default function Borrow({
                 </div>
             </div>
             <div className="space-y-2">
-                <div className="mb-3">
+                <div className="mb-3 flex justify-between">
                     <Search/>
+                    {["admin", "operator"].includes(session.data?.user.role || "user") ? (
+                        <Link href="/api/borrow?download=1" className="btn btn-primary">Unduh Laporan</Link>
+                    ) : null}
                 </div>
                 <div className="overflow-x-auto">
                     <table className="table">

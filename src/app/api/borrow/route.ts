@@ -1,7 +1,10 @@
 import prisma from "@/lib/db";
+import xlsx, { IJsonSheet } from "json-as-xlsx";
 import { randomBytes } from "crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { getAuthSession } from "@/lib/auth";
+import { Borrow_Status } from "@prisma/client";
+
 interface Payload {
     bookId: string;
     amount: number;
@@ -11,6 +14,7 @@ interface Payload {
 export async function GET(request: NextRequest){
     try {
         const keyword = request.nextUrl.searchParams.get("keyword");
+        const isDownload = request.nextUrl.searchParams.get("download");
         const session = await getAuthSession();
         const borrows = await prisma.borrow.findMany({
             ...(session!.user.role == "user" ? {
@@ -45,8 +49,39 @@ export async function GET(request: NextRequest){
                 }
             }: {})
         });
-        return NextResponse.json({ data: borrows });
+        if (!isDownload || session!.user.role == "user") return NextResponse.json({ data: borrows });
+        const buffer = await xlsx([
+            {
+                sheet: `Laporan peminjaman buku`,
+                columns: [
+                    { label: "Kode Peminjaman", value: "code" },
+                    { label: "Peminjam", value: "user.name" },
+                    { label: "Tanggal peminjaman", value: "borrowed_at"},
+                    { label: "Judul Buku", value: "book.title" },
+                    { label: "Jumlah dipinjam", value: "amount" },
+                    { label: "Keterangan", value: (row: any) => row.status == "pending_borrow" ? "Menunggu konfirmasi peminjaman" : row.status == "pending_return" ? "Menunggu konfirmasi pengembalian" : row.status == "confirmed_borrow" ? "Sedang dipinjam" : row.status == "confirmed_lost" ? "Buku Hilang" : "Telah dikembalikan" },
+                    { label: "Jadwal pengembalian", value: "return_schedule" },
+                    { label: "Tanggal dikembalikan", value: "returned_at" },
+                    { label: "Denda", value: "fine"}
+                ],
+                content: borrows
+            }
+        ], {
+            RTL: false,
+            writeOptions: {
+                type: 'buffer',
+                bookType: 'xlsx'
+            }
+        })
+        return new NextResponse(buffer, {
+            status: 200,
+            headers: new Headers({
+                "content-disposition": `attachment; filename=Laporan ${new Date().getMonth()}/${new Date().getFullYear()}.xlsx`,
+                "content-type": "application/octet-stream"
+            })
+        })
     }catch(e){
+        console.log(e)
         return NextResponse.json({ message: "404 not found"}, { status: 404})
     }
 }
