@@ -1,10 +1,11 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from "react";
-import { Borrow } from "@prisma/client";
 import { useSession } from "next-auth/react";
 import useToastStore from "@/store/useToastStore";
 import Search from "@/components/search";
+import type { Borrow } from "@prisma/client";
+
 interface ExtBorrow extends Omit<Borrow, "borrowed_at" | "returned_at" | "return_schedule"> {
     borrowed_at: string;
     returned_at: string;
