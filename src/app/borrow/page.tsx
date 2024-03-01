@@ -103,7 +103,7 @@ export default function Borrow({
                 </div>
             </div>
             <div className="space-y-2">
-                <div className="mb-3 flex justify-between">
+                <div className="mb-3 flex justify-between gap-2">
                     <Search/>
                     {["admin", "operator"].includes(session.data?.user.role || "user") ? (
                         <Link href="/api/borrow?download=1" className="btn btn-primary">Unduh Laporan</Link>
