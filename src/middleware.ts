@@ -6,11 +6,11 @@ function yourOwnMiddleware(request: NextRequest) {
 }
   
 export default withAuth(yourOwnMiddleware, {
-    // callbacks: {
-    //     authorized: ({ token, req }) => {
-    //         return !!token
-    //     }
-    // }
+    callbacks: {
+        authorized: ({ token, req }) => {
+            return req.nextUrl.pathname == "/" || !!token
+        }
+    }
 });
   
 export const config = {
