@@ -14,6 +14,9 @@ interface Payload {
 export async function GET(request: NextRequest){
     try {
         const keyword = request.nextUrl.searchParams.get("keyword");
+        const from = request.nextUrl.searchParams.get("from");
+        const to = request.nextUrl.searchParams.get("to");
+
         const isDownload = request.nextUrl.searchParams.get("download");
         const session = await getAuthSession();
         const borrows = await prisma.borrow.findMany({
@@ -41,13 +44,17 @@ export async function GET(request: NextRequest){
             orderBy: {
                 borrowed_at: 'desc'
             },
-            ...(keyword ? {
-                where: {
+            where: {
+                borrowed_at: {
+                    lte: new Date(to?? ""),
+                    gte: new Date(from?? "")
+                },
+                ...(keyword ? {
                     OR: [
                         { code: { contains: keyword, mode: 'insensitive'}},
                     ]
-                }
-            }: {})
+                }: {})
+            }
         });
         if (!isDownload || session!.user.role == "user") return NextResponse.json({ data: borrows });
         const buffer = await xlsx([

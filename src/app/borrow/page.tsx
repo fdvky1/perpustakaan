@@ -6,6 +6,7 @@ import useToastStore from "@/store/useToastStore";
 import Search from "@/components/search";
 import type { Borrow } from "@prisma/client";
 import Link from "next/link";
+import DatePicker from "@/components/datePicker";
 
 interface ExtBorrow extends Omit<Borrow, "borrowed_at" | "returned_at" | "return_schedule"> {
     borrowed_at: string;
@@ -25,10 +26,16 @@ export default function Borrow({
 }: {
     searchParams?: {
         keyword?: string;
+        from?: string;
+        to?: string;
     }
 }){
+    let now = new Date();
     const session = useSession();
     const keyword = searchParams?.keyword || "";
+    const from = searchParams?.from || new Date(now.getFullYear(), now.getMonth(), 2).toISOString().split('T')[0];
+    const to = searchParams?.to || new Date(now.getFullYear(), now.getMonth()+1).toISOString().split('T')[0];
+
     const [borrows, setBorrows] = useState<ExtBorrow[]>([]);
     const [modal, setModal] = useState<{action: "return" | "confirmed_borrow" | "confirmed_return" | "confirmed_lost" | "", status: boolean, selected?: string, input?: string}>({
         action: "",
@@ -39,7 +46,7 @@ export default function Borrow({
 
     const { setMessage } = useToastStore();
 
-    const fetchBook = () => fetch(`/api/borrow?${keyword.length > 0 ? "keyword=" + keyword + "&" : ""}`).then(async res => {
+    const fetchBook = () => fetch(`/api/borrow?from=${from}&to=${to}${keyword.length > 0 ? "keyword=" + keyword + "&" : ""}`).then(async res => {
         if (res.status == 200){
             const json = await res.json();;
             setBorrows(json.data  as ExtBorrow[])
@@ -48,7 +55,7 @@ export default function Borrow({
 
     useEffect(()=> {
         fetchBook();    
-    }, [keyword]);
+    }, [keyword, from, to]);
     const resetModal = ()=> setModal({ action: "", status: false, input: "", selected: ""});
 
     const updateStatus = (e: FormEvent<HTMLFormElement>) => {
@@ -103,11 +110,19 @@ export default function Borrow({
                 </div>
             </div>
             <div className="space-y-2">
-                <div className="mb-3 flex justify-between gap-2">
-                    <Search/>
-                    {["admin", "operator"].includes(session.data?.user.role || "user") ? (
-                        <Link href="/api/borrow?download=1" className="btn btn-primary">Unduh Laporan</Link>
-                    ) : null}
+                <div className="mb-3 flex flex-wrap justify-between gap-2">
+                    <div className="flex gap-0.5 w-full">
+                        <Search/>
+                        <div className="hidden lg:block mr-auto">
+                            <DatePicker/>
+                        </div>
+                        {["admin", "operator"].includes(session.data?.user.role || "user") ? (
+                            <Link href="/api/borrow?download=1" className="btn btn-primary">Unduh Laporan</Link>
+                        ) : null}
+                    </div>
+                    <div className="lg:hidden">
+                        <DatePicker/>
+                    </div>
                 </div>
                 <div className="overflow-x-auto">
                     <table className="table">
