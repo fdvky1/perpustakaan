@@ -3,15 +3,19 @@ import { FormEvent, useEffect, useState } from "react"
 import type { Category } from "@prisma/client";
 import useToastStore from "@/store/useToastStore";
 import Search from "@/components/search";
+import Pagination from "@/components/pagination";
 
 export default function CategoryPage({
     searchParams
 }: {
     searchParams?: {
         keyword?: string;
+        page?: string;
     }
 }){
     const keyword = searchParams?.keyword || ""
+    const page = searchParams?.page || "1"
+    const [count, setCount] = useState<number|null>(null);
     const [modal, setModal] = useState<{action: "create" | "update" | "delete" | "", status: boolean, selected?: string, input?: string}>({
         action: "",
         status: false,
@@ -24,14 +28,17 @@ export default function CategoryPage({
 
     const resetModal = ()=> setModal({ action: "", status: false, input: "", selected: ""});
 
-    const fetchCategory = () => fetch(`/api/category?${keyword.length > 0 ? "keyword=" + keyword + "&" : ""}`).then(async res => {
+    const fetchCategory = () => fetch(`/api/category?limit=10&${page.length > 0 ? "page=" + page + "&" : ""}${!count ? "count=true&" : ""}${keyword.length > 0 ? "keyword=" + keyword + "&" : ""}`).then(async res => {
         const json = await res.json();
         setCategories(json.data);
+        if(!count && json.count){
+            setCount(json.count)
+        }
     })
 
     useEffect(()=>{
         fetchCategory();    
-    }, [keyword]);
+    }, [keyword, page]);
 
     const create = async (e: FormEvent<HTMLFormElement>)=>{
         e.preventDefault();
@@ -140,6 +147,9 @@ export default function CategoryPage({
                             ): null}
                         </tbody>
                     </table>
+                    {categories.length > 0 ? (
+                        <Pagination pages={(count?? 10)/10}/>
+                    ): null}
                 </div>
             </div>
         </div>
