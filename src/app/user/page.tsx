@@ -1,9 +1,10 @@
 "use client"
-import { Role, User } from "@prisma/client"
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react"
 import useToastStore from "@/store/useToastStore";
 import Search from "@/components/search";
+import Pagination from "@/components/pagination";
+import type { Role, User } from "@prisma/client"
 
 interface ExtUser extends Omit<User, "password"|"id"|"deleted_at">{
     id?: string;
@@ -12,9 +13,11 @@ interface ExtUser extends Omit<User, "password"|"id"|"deleted_at">{
 
 export default function User({ searchParams }: { searchParams?: {
     keyword?: string;
+    page?: string;
 }}){
     const keyword = searchParams?.keyword || "";
-    const router = useRouter();
+    const page = searchParams?.page || "1"
+    const [count, setCount] = useState<number|null>(null);
     const [user, setUser] = useState<ExtUser[]>([]);
     const [modal, setModal] = useState<{action: "create" | "delete" | "update", status: boolean, selected?: string, input?: ExtUser}>({
         action: "create",
@@ -32,14 +35,18 @@ export default function User({ searchParams }: { searchParams?: {
     const { setMessage } = useToastStore();
     const resetModal = ()=> setModal({ action: "create", status: false, selected: "", input: { id: "", name: "", role: "user", email: "", address: "", password: ""}});
 
-    const fetchUsers = () => fetch(`/api/user?${keyword.length > 0 ? "keyword=" + keyword + "&" : ""}`).then(async res => {
+    const fetchUsers = () => fetch(`/api/user?limit=10&${page.length > 0 ? "page=" + page + "&" : ""}${!count ? "count=true&" : ""}${keyword.length > 0 ? "keyword=" + keyword + "&" : ""}`).then(async res => {
         // if(res.status !== 200) return router.push("/dashboard");
-        setUser((await res.json()).data as ExtUser[]);
+        const json = await res.json();
+        setUser(json.data as ExtUser[]);
+        if(!count && json.count){
+            setCount(json.count)
+        }
     });
 
     useEffect(()=> {
         fetchUsers()
-    }, [keyword]);
+    }, [keyword, page]);
 
     const createUser = (e: FormEvent<HTMLFormElement>) => {
         e.preventDefault();
@@ -185,6 +192,9 @@ export default function User({ searchParams }: { searchParams?: {
                             ): null}
                         </tbody>
                     </table>
+                    {user.length > 0 ? (
+                        <Pagination pages={(count?? 10)/10}/>
+                    ): null}
                 </div>
             </div>
         </div>

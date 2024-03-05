@@ -15,33 +15,41 @@ interface Payload {
 export async function GET(request: NextRequest){
     const keyword = request.nextUrl.searchParams.get("keyword");
     const session = await getAuthSession();
-    const users = await prisma.user.findMany({
-        select: {
-            id: true,
-            name: true,
-            email: true,
-            address: true,
-            role: true
-        },
-        where: {
-            id: {
-                not: session?.user.id
-            },
-            role: {
-                not: "admin"
-            },
-            ...(keyword ? {
-                    OR: [
-                        { name: { contains: keyword, mode: 'insensitive'}},
-                        { email: { contains: keyword, mode: 'insensitive'}},
-                        { address: { contains: keyword, mode: 'insensitive'}},
-                    ]
-                }
-            : {})
-        }
-    });
+    const limit = parseInt(request.nextUrl.searchParams.get("limit")?? "10");
+    const page = parseInt(request.nextUrl.searchParams.get("page")?? "1");
 
-    return NextResponse.json({ data: users})
+    const [users, count] = await prisma.$transaction([
+        prisma.user.findMany({
+            select: {
+                id: true,
+                name: true,
+                email: true,
+                address: true,
+                role: true
+            },
+            where: {
+                id: {
+                    not: session?.user.id
+                },
+                role: {
+                    not: "admin"
+                },
+                ...(keyword ? {
+                        OR: [
+                            { name: { contains: keyword, mode: 'insensitive'}},
+                            { email: { contains: keyword, mode: 'insensitive'}},
+                            { address: { contains: keyword, mode: 'insensitive'}},
+                        ]
+                    }
+                : {})
+            },
+            skip: limit * (page - 1),
+            take: limit 
+        }),
+        ...(!!request.nextUrl.searchParams.get("count") ? [prisma.user.count()] : []) 
+    ]);
+
+    return NextResponse.json({ data: users, count})
 }
 
 
