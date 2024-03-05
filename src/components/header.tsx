@@ -19,7 +19,7 @@ export default function Header(){
     useEffect(()=>{
         const local = window.localStorage.getItem('theme');
         const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches
-        setTheme(local ? (isDark? "dark" : "light") : (local as "light"|"dark"));
+        setTheme(local ? (local as "light"|"dark") : (isDark? "dark" : "light"));
     }, [])
     return ["/sign-in", "/sign-up"].includes(pathname) ? (<></>) : (
         <>
@@ -35,18 +35,20 @@ export default function Header(){
                     </div>
                 </div>
             </div>
-            <div className="navbar bg-base-100 gap-1.5">
+            <div className="navbar bg-base-100 gap-2 w-full">
+            {session.data?.user ? (
                 <div className="flex-none">
                     <label htmlFor="my-drawer" className="btn btn-square btn-ghost">
                         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" className="inline-block w-5 h-5 stroke-current"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
                     </label>
                 </div>
-                <div className="flex-1">
+            ) : null}
+                <div className="flex-1 hidden md:block">
                     <a className="btn btn-ghost text-xl">Perpustakaan</a>
                 </div>
-                <div>
+                <div className='ml-auto'>
                     <label className="swap swap-rotate">
-            
+
                         {/* this hidden checkbox controls the state */}
                         <input type="checkbox" onChange={() => setTheme(theme == "light" ? "dark" : "light")} checked={theme == "dark"}/>
                         
@@ -91,7 +93,11 @@ export default function Header(){
                             </div>
                         </div>
                     </div>
-                    ) : (<></>)
+                    ) : (
+                        <div>
+                            <Link href="/signin" className="btn btn-primary">Masuk</Link>
+                        </div>
+                    )
                 }
                 </div>
             {session.data?.user ? (
@@ -99,8 +105,11 @@ export default function Header(){
                     <input id="my-drawer" type="checkbox" className="drawer-toggle" />
                     <div className="drawer-side z-[999]">
                         <label htmlFor="my-drawer" aria-label="close sidebar" className="drawer-overlay"></label>
-                        <ul className="menu pt-[5rem] px-4 w-[calc(90dvw-5rem)] sm:w-full max-w-80 min-h-full bg-base-200 text-base-content space-y-2">
+                        <ul className="menu px-4 w-[calc(90dvw-5rem)] sm:w-full max-w-80 min-h-full bg-base-200 text-base-content space-y-2">
                         {/* Sidebar content here */}
+                            <li>
+                                <a className="btn btn-ghost text-xl justify-start">Perpustakaan</a>
+                            </li>
                             <li><Link href="/dashboard">Dashboard</Link></li>
                             {session.data ? session.data.user.role == "user" ? (
                                 <li>
