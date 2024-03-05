@@ -5,6 +5,7 @@ import { useEffect, useState } from "react"
 import { useSession } from "next-auth/react"
 import type { Book, Category } from "@prisma/client";
 import Search from "@/components/search";
+import Pagination from "@/components/pagination";
 
 interface ExtBook extends Omit<Book, "published_at"> {
 
@@ -15,19 +16,25 @@ export default function Book({
 }: {
     searchParams?: {
         keyword?: string;
+        page?: string;
     }
 }){
     const keyword = searchParams?.keyword || ""
     const session = useSession();
     const [category, setCategory] = useState("")
 
+    const page = searchParams?.page || "1"
+    const [count, setCount] = useState<number|null>(null);
     const [book, setBook] = useState<ExtBook[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
 
-    const fetchBooks = () => fetch(`/api/book?${category.length > 0 ? "category=" + category + "&" : ""}${keyword.length > 0 ? "keyword=" + keyword + "&" : ""}`).then( async res => {
+    const fetchBooks = () => fetch(`/api/book?limit=20&${page.length > 0 ? "page=" + page + "&" : ""}${!count ? "count=true&" : ""}${category.length > 0 ? "category=" + category + "&" : ""}${keyword.length > 0 ? "keyword=" + keyword + "&" : ""}`).then( async res => {
         if (res.status == 200){
-            const json = (await res.json()).data as ExtBook[];
-            setBook(json);
+            const json = (await res.json());
+            setBook(json.data as ExtBook[]);
+            if(!count && json.count){
+                setCount(json.count)
+            }
         }
     });
 
@@ -44,7 +51,7 @@ export default function Book({
     
     useEffect(()=>{
         fetchBooks();
-    }, [keyword, category]);
+    }, [keyword, category, page]);
 
     return (
         <div className="container mx-auto pt-10 pb-16 px-2">
@@ -92,7 +99,9 @@ export default function Book({
                 ))}
                 {book.length == 0 ? (
                     <p className="text-center text-lg">Tidak ada buku</p>
-                ) : (<></>)}
+                ) : (
+                    <Pagination pages={(count?? 20)/20}/>
+                )}
             </div>
         </div>
     )

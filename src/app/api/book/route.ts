@@ -12,6 +12,8 @@ type SearchCondition = {
 };
 
 interface Query {
+    skip: number;
+    take: number;
     where?: {
         categories?:{
             some?: {
@@ -40,9 +42,13 @@ export async function GET(request: NextRequest){
     const include = request.nextUrl.searchParams.get("include");
     const keyword = request.nextUrl.searchParams.get("keyword");
     const category = request.nextUrl.searchParams.get("category");
+    const limit = parseInt(request.nextUrl.searchParams.get("limit")?? "10");
+    const page = parseInt(request.nextUrl.searchParams.get("page")?? "1");
 
-
-    const query: Query = {};
+    const query: Query = {
+        skip: limit * (page - 1),
+        take: limit
+    };
     if(!!keyword){
         query.where = {
             OR: [
@@ -79,8 +85,8 @@ export async function GET(request: NextRequest){
         }
     }
     
-    const books = await prisma.book.findMany(query);
-    return NextResponse.json({ data: books })
+    const [books, count] = await prisma.$transaction([prisma.book.findMany(query), ...(!!request.nextUrl.searchParams.get("count") ? [prisma.book.count()] : []) ]);
+    return NextResponse.json({ data: books, count })
 }
 
 export async function POST(request: Request){
