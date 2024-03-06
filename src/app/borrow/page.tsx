@@ -46,7 +46,7 @@ export default function Borrow({
 
     const { setMessage } = useToastStore();
 
-    const fetchBook = () => fetch(`/api/borrow?from=${from}&to=${to}${keyword.length > 0 ? "keyword=" + keyword + "&" : ""}`).then(async res => {
+    const fetchBook = () => fetch(`/api/borrow?from=${from}&to=${to}&${keyword.length > 0 ? "keyword=" + keyword + "&" : ""}`).then(async res => {
         if (res.status == 200){
             const json = await res.json();;
             setBorrows(json.data  as ExtBorrow[])
