@@ -20,7 +20,7 @@ export default function AdminDashboard(){
     })
 
     useEffect(()=>{
-        if (session.data && ["user", "admin"].includes(session.data?.user.role)){
+        if (session.data && ["operator", "admin"].includes(session.data?.user.role)){
             fetchStats();
         }
     }, [session])
