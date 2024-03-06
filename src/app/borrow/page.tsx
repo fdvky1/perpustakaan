@@ -117,7 +117,7 @@ export default function Borrow({
                             <DatePicker/>
                         </div>
                         {["admin", "operator"].includes(session.data?.user.role || "user") ? (
-                            <Link href="/api/borrow?download=1" className="btn btn-primary">Unduh Laporan</Link>
+                            <Link href={`/api/borrow?from=${from}&to=${to}&download=1`} className="btn btn-primary">Unduh Laporan</Link>
                         ) : null}
                     </div>
                     <div className="lg:hidden">
