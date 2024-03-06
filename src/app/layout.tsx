@@ -9,6 +9,7 @@ import Header from "@/components/header";
 import ClientProvider from "@/providers/ClientProviders";
 
 import "./globals.css";
+import Footer from "@/components/footer";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -43,6 +44,7 @@ export default function RootLayout({
             <Toast/>
             {children}
           </div>
+          <Footer/>
         </ClientProvider>
       </body>
     </html>
