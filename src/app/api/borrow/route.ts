@@ -45,10 +45,12 @@ export async function GET(request: NextRequest){
                 borrowed_at: 'desc'
             },
             where: {
-                borrowed_at: {
-                    lte: new Date(to?? ""),
-                    gte: new Date(from?? "")
-                },
+                ...(from && to ? {
+                    borrowed_at: {
+                        lte: new Date(to?? ""),
+                        gte: new Date(from?? "")
+                    },
+                } : {}),
                 ...(keyword ? {
                     OR: [
                         { code: { contains: keyword, mode: 'insensitive'}},
