@@ -16,11 +16,11 @@ export default function Header(){
         document.querySelector('html')?.setAttribute('data-theme', theme);
     }, [theme]);
 
-    useEffect(()=>{
-        const local = window.localStorage.getItem('theme');
-        const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches
-        setTheme(local ? (local as "light"|"dark") : (isDark? "dark" : "light"));
-    }, [])
+    // useEffect(()=>{
+    //     const local = window.localStorage.getItem('theme');
+    //     const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches
+    //     setTheme(local ? (local as "light"|"dark") : (isDark? "dark" : "light"));
+    // }, [])
     return ["/sign-in", "/sign-up"].includes(pathname) ? (<></>) : (
         <>
             {/* Put this part before </body> tag */}
