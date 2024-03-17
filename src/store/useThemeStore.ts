@@ -1,12 +1,12 @@
 import { create } from "zustand"
 
 type Theme = {
-    theme: "light"|"dark",
+    theme: null | "light" | "dark",
     setTheme: (theme: "light"|"dark") => void
 }
 
 const useThemeStore = create<Theme>()((set)=>({
-    theme: window.localStorage.getItem('theme') as "light"|"dark" ?? (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"),
+    theme: null,
     setTheme: (theme: "light"|"dark") => {
         set(() => ({ theme }));
     }
