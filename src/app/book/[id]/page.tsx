@@ -194,10 +194,11 @@ export default function BookDetail({ params }: { params: { id: string }}){
                             <label htmlFor="deleteModal" className="btn btn-error">Hapus Buku</label>
                             </>
                         ) : (
-                            <div className="flex gap-1">
-                                <input type="number" name="amount" id="amount" min={1} max={book?.stock||0} className="input input-bordered max-w-[6rem]" value={modal.input.amount} onChange={((e: FormEvent<HTMLInputElement>) => setModal({...modal, input: {...modal.input, amount: parseInt(e.currentTarget.value)}}))}/>
-                                <label htmlFor="borrowModal" className="btn btn-primary">Pinjam Buku</label>
-                            </div>
+                            <></>
+                            // <div className="flex gap-1">
+                            //     <input type="number" name="amount" id="amount" min={1} max={book?.stock||0} className="input input-bordered max-w-[6rem]" value={modal.input.amount} onChange={((e: FormEvent<HTMLInputElement>) => setModal({...modal, input: {...modal.input, amount: parseInt(e.currentTarget.value)}}))}/>
+                            //     <label htmlFor="borrowModal" className="btn btn-primary">Pinjam Buku</label>
+                            // </div>
                         )}
                     </div>
                 </div>
