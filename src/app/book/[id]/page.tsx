@@ -75,7 +75,7 @@ export default function BookDetail({ params }: { params: { id: string }}){
                                 <div className="label">
                                     <span className="label-text mb-1">Tentukan tanggal pengembalian</span>
                                 </div>
-                                <input type="date" name="return_schedule" value={modal.input.returnSchedule} onChange={((e: FormEvent<HTMLDataElement>) => setModal({...modal, input:{ ...modal.input, returnSchedule: e.currentTarget.value}}))} className="input input-bordered w-full" />
+                                <input type="date" name="return_schedule" min={new Date().toISOString().split('T')[0]} max={new Date((new Date()).getTime() + (1000 * 60 * 60 * 24 * 7)).toISOString().split('T')[0]} value={modal.input.returnSchedule} onChange={((e: FormEvent<HTMLDataElement>) => setModal({...modal, input:{ ...modal.input, returnSchedule: e.currentTarget.value}}))} className="input input-bordered w-full" />
                             </label>
                         ):(<></>)}
                         <div className="modal-action">
