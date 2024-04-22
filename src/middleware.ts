@@ -8,6 +8,7 @@ function yourOwnMiddleware(request: NextRequest) {
 export default withAuth(yourOwnMiddleware, {
     callbacks: {
         authorized: ({ token, req }) => {
+            if(["/user", "/category", "/api/user", "/api/stats"].includes(req.nextUrl.pathname) && token?.role == "user") return false
             return req.nextUrl.pathname == "/" || !!token
         }
     }
