@@ -15,6 +15,7 @@ export default function CategoryPage({
 }){
     const keyword = searchParams?.keyword || ""
     const page = searchParams?.page || "1"
+    const [isLoading, setLoading] = useState(true);
     const [count, setCount] = useState<number|null>(null);
     const [modal, setModal] = useState<{action: "create" | "update" | "delete" | "", status: boolean, selected?: string, input?: string}>({
         action: "",
@@ -28,13 +29,17 @@ export default function CategoryPage({
 
     const resetModal = ()=> setModal({ action: "", status: false, input: "", selected: ""});
 
-    const fetchCategory = () => fetch(`/api/category?limit=10&${page.length > 0 ? "page=" + page + "&" : ""}${!count ? "count=true&" : ""}${keyword.length > 0 ? "keyword=" + keyword + "&" : ""}`).then(async res => {
-        const json = await res.json();
-        setCategories(json.data);
-        if(!count && json.count){
-            setCount(json.count)
-        }
-    })
+    const fetchCategory = () => {
+        setLoading(true)
+        fetch(`/api/category?limit=10&${page.length > 0 ? "page=" + page + "&" : ""}${!count ? "count=true&" : ""}${keyword.length > 0 ? "keyword=" + keyword + "&" : ""}`).then(async res => {
+            setLoading(false)
+            const json = await res.json();
+            setCategories(json.data);
+            if(!count && json.count){
+                setCount(json.count)
+            }
+        })
+    }
 
     useEffect(()=>{
         fetchCategory();    
@@ -124,7 +129,7 @@ export default function CategoryPage({
                             </tr>
                         </thead>
                         <tbody>
-                            {categories.map((c, i) => (
+                            {!isLoading ? categories.map((c, i) => (
                                 <tr className="bg-base-200" key={i}>
                                     <th>{i+1}</th>
                                     <td>{c.name}</td>
@@ -137,8 +142,14 @@ export default function CategoryPage({
                                         </button>
                                     </td>
                                 </tr> 
-                            ))}
-                            {categories.length == 0 ? (
+                            )) : <></>}
+                            {isLoading ? (
+                                <tr className="w-full text-center">
+                                    <td colSpan={3}>
+                                        <span className="loading loading-dots loading-sm"></span>
+                                    </td>
+                                </tr>
+                            ) : categories.length == 0 ? (
                                 <tr className="w-full text-center">
                                     <td colSpan={3}>
                                         Tidak ada data

@@ -27,23 +27,30 @@ export default function Book({
     const [count, setCount] = useState<number|null>(null);
     const [book, setBook] = useState<ExtBook[]>([]);
     const [categories, setCategories] = useState<Category[]>([]);
+    const [isLoading, setLoading] = useState(true);
 
-    const fetchBooks = () => fetch(`/api/book?limit=20&${page.length > 0 ? "page=" + page + "&" : ""}${!count ? "count=true&" : ""}${category.length > 0 ? "category=" + category + "&" : ""}${keyword.length > 0 ? "keyword=" + keyword + "&" : ""}`).then( async res => {
-        if (res.status == 200){
-            const json = (await res.json());
-            setBook(json.data as ExtBook[]);
-            if(!count && json.count){
-                setCount(json.count)
+    const fetchBooks = () => {
+        setLoading(true)
+        fetch(`/api/book?limit=20&${page.length > 0 ? "page=" + page + "&" : ""}${!count ? "count=true&" : ""}${category.length > 0 ? "category=" + category + "&" : ""}${keyword.length > 0 ? "keyword=" + keyword + "&" : ""}`).then( async res => {
+            setLoading(false)
+           if (res.status == 200){
+               const json = (await res.json());
+               setBook(json.data as ExtBook[]);
+               if(!count && json.count){
+                   setCount(json.count)
+               }
+           }
+       });
+    }
+
+    const fetchCategories = () => {
+        fetch("/api/category").then(async(res)=>{
+            if (res.status == 200){
+                const json = (await res.json()).data as Category[];
+                setCategories(json)
             }
-        }
-    });
-
-    const fetchCategories = () => fetch("/api/category").then(async(res)=>{
-        if (res.status == 200){
-            const json = (await res.json()).data as Category[];
-            setCategories(json)
-        }
-    })
+        })
+    }
 
     useEffect(()=>{
         fetchCategories();
@@ -79,7 +86,8 @@ export default function Book({
                 ) : (<></>)}
             </div>
             <div className="flex flex-wrap gap-2 w-full justify-center">
-                {book.map((d, i) => (
+                {!isLoading ?
+                    book.map((d, i) => (
                     <Link href={"/book/" + d.id} key={i}>
                         <div className="card card-compact w-40 md:w-44 bg-base-100 shadow-xl h-64">
                             <figure className="relative h-44">
@@ -96,12 +104,9 @@ export default function Book({
                             </div>
                         </div>
                     </Link>
-                ))}
-                {book.length == 0 ? (
-                    <p className="text-center text-lg">Tidak ada buku</p>
-                ) : (
-                    <Pagination pages={(count?? 20)/20}/>
-                )}
+                    ))
+                : <></>}
+                {isLoading ? <span className="loading loading-dots loading-sm"></span> : book.length == 0 ? <p className="text-center text-lg">Tidak ada buku</p> : <Pagination pages={(count?? 20)/20}/>}
             </div>
         </div>
     )

@@ -19,6 +19,7 @@ export default function User({ searchParams }: { searchParams?: {
     const page = searchParams?.page || "1"
     const [count, setCount] = useState<number|null>(null);
     const [user, setUser] = useState<ExtUser[]>([]);
+    const [isLoading, setLoading] = useState(true);
     const [modal, setModal] = useState<{action: "create" | "delete" | "update", status: boolean, selected?: string, input?: ExtUser}>({
         action: "create",
         status: false,
@@ -35,14 +36,18 @@ export default function User({ searchParams }: { searchParams?: {
     const { setMessage } = useToastStore();
     const resetModal = ()=> setModal({ action: "create", status: false, selected: "", input: { id: "", name: "", role: "user", email: "", address: "", password: ""}});
 
-    const fetchUsers = () => fetch(`/api/user?limit=10&${page.length > 0 ? "page=" + page + "&" : ""}${!count ? "count=true&" : ""}${keyword.length > 0 ? "keyword=" + keyword + "&" : ""}`).then(async res => {
-        // if(res.status !== 200) return router.push("/dashboard");
-        const json = await res.json();
-        setUser(json.data as ExtUser[]);
-        if(!count && json.count){
-            setCount(json.count)
-        }
-    });
+    const fetchUsers = () => {
+        setLoading(true);
+        fetch(`/api/user?limit=10&${page.length > 0 ? "page=" + page + "&" : ""}${!count ? "count=true&" : ""}${keyword.length > 0 ? "keyword=" + keyword + "&" : ""}`).then(async res => {
+           // if(res.status !== 200) return router.push("/dashboard");
+           setLoading(false);
+           const json = await res.json();
+           setUser(json.data as ExtUser[]);
+           if(!count && json.count){
+               setCount(json.count)
+           }
+       });
+    }
 
     useEffect(()=> {
         fetchUsers()
@@ -167,7 +172,7 @@ export default function User({ searchParams }: { searchParams?: {
                             </tr>
                         </thead>
                         <tbody>
-                            {user.map((b, i) => (
+                            {!isLoading ? user.map((b, i) => (
                                 <tr className="bg-base-200 text-center" key={i}>
                                     <th>{b.name}</th>
                                     <td className="capitalize">{b.role == "admin" ? "Administrator" : b.role == "operator" ? "Petugas" : "Pengguna"}</td>
@@ -182,8 +187,14 @@ export default function User({ searchParams }: { searchParams?: {
                                         </button>
                                     </td>
                                 </tr> 
-                            ))}
-                            {user.length == 0 ? (
+                            )) : <></>}
+                            {isLoading ? (
+                                <tr className="w-full text-center">
+                                    <td colSpan={5}>
+                                        <span className="loading loading-dots loading-sm"></span>
+                                    </td>
+                                </tr>
+                            ) : user.length == 0 ? (
                                 <tr className="w-full text-center">
                                     <td colSpan={5}>
                                         Tidak ada data

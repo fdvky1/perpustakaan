@@ -37,6 +37,7 @@ export default function Borrow({
     const to = searchParams?.to || new Date(now.getFullYear(), now.getMonth()+1).toISOString().split('T')[0];
 
     const [borrows, setBorrows] = useState<ExtBorrow[]>([]);
+    const [isLoading, setLoading] = useState(true)
     const [modal, setModal] = useState<{action: "return" | "confirmed_borrow" | "confirmed_return" | "confirmed_lost" | "", status: boolean, selected?: string, input?: string}>({
         action: "",
         status: false,
@@ -46,12 +47,16 @@ export default function Borrow({
 
     const { setMessage } = useToastStore();
 
-    const fetchBook = () => fetch(`/api/borrow?${keyword.length > 0 ? "keyword=" + keyword + "&" : "from=" + from + "&to=" + to}`).then(async res => {
-        if (res.status == 200){
-            const json = await res.json();;
-            setBorrows(json.data  as ExtBorrow[])
-        }
-    });
+    const fetchBook = () => {
+        setLoading(true);
+        fetch(`/api/borrow?${keyword.length > 0 ? "keyword=" + keyword + "&" : "from=" + from + "&to=" + to}`).then(async res => {
+            setLoading(false)
+            if (res.status == 200){
+                const json = await res.json();;
+                setBorrows(json.data  as ExtBorrow[])
+            }
+        })
+    }
 
     useEffect(()=> {
         fetchBook();    
@@ -145,7 +150,7 @@ export default function Borrow({
                             </tr>
                         </thead>
                         <tbody>
-                            {borrows.map((b, i) => (
+                            {!isLoading ? borrows.map((b, i) => (
                                 <tr className="bg-base-200 text-center" key={i}>
                                     <th>{b.code}</th>
                                     {session.data && ["admin", "operator"].includes(session.data?.user.role) ? (
@@ -179,8 +184,14 @@ export default function Borrow({
                                     </td>
                                     {/* <td><button type="button" disabled={!!b.returned_at} className="btn btn-primary py-0.5" onClick={(()=> setModal({ action: "return", status: true, selected: b.id}))}><i className="ri-check-line ri-xl text-white"></i></button></td> */}
                                 </tr> 
-                            ))}
-                            {borrows.length == 0 ? (
+                            )) : <></>}
+                            {isLoading ? (
+                                <tr className="w-full text-center">
+                                    <td colSpan={session.data?.user.role == "user" ? 9 : 10}>
+                                        <span className="loading loading-dots loading-sm"></span>
+                                    </td>
+                                </tr>
+                                ) : borrows.length == 0 ? (
                                 <tr className="w-full text-center">
                                     <td colSpan={session.data?.user.role == "user" ? 9 : 10}>
                                         Tidak ada data
