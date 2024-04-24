@@ -23,9 +23,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 
 export async function middleware(request: NextRequest) {
+  if(request.nextUrl.pathname == "/") return NextResponse.next();
   const token = await getToken({ req: request, secret: process.env.SECRET });
 
-  if (!token && request.nextUrl.pathname != "/") return NextResponse.redirect(new URL("/sign-in", request.url));
+  if (!token) return NextResponse.redirect(new URL("/sign-in", request.url));
 
   // Check the role and redirect based on the role
   switch (token.role) {
